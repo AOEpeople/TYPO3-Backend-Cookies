@@ -1,0 +1,206 @@
+<?php
+/***************************************************************
+*  Copyright notice
+*
+*  (c) 2010 Oliver Hader <oliver@typo3.org>
+*  All rights reserved
+*
+*  This script is part of the TYPO3 project. The TYPO3 project is
+*  free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  The GNU General Public License can be found at
+*  http://www.gnu.org/copyleft/gpl.html.
+*  A copy is found in the textfile GPL.txt and important notices to the license
+*  from the author is found in LICENSE.txt distributed with these scripts.
+*
+*
+*  This script is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  This copyright notice MUST APPEAR in all copies of the script!
+***************************************************************/
+
+/**
+ * Hook to set backend cookies using a frontend request.
+ *
+ * @author Oliver Hader <oliver@typo3.org>
+ * @package becookies
+ * @subpackage hooks
+ *
+ */
+class tx_becookies_frontendHook implements t3lib_Singleton {
+	/**
+	 * @var array
+	 */
+	protected $arguments;
+
+	/**
+	 * @var t3lib_beUserAuth
+	 */
+	protected $backendUser;
+
+	/**
+	 * Creates this object.
+	 */
+	public function __construct() {
+		if (isset($_GET['tx_becookies']) && is_array($_GET['tx_becookies'])) {
+			$this->setArguments(t3lib_div::_GP('tx_becookies'));
+		}
+		$this->setBackendUser(t3lib_div::makeInstance('t3lib_beUserAuth'));
+	}
+
+	/**
+	 * Initializes the database connection.
+	 *
+	 * @return void
+	 */
+	protected function initializeDatabase() {
+		if ($GLOBALS['TYPO3_DB']->link === FALSE) {
+			if (!(
+					TYPO3_db_host && TYPO3_db_username && TYPO3_db_password && TYPO3_db &&
+					$GLOBALS['TYPO3_DB']->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password) &&
+					$GLOBALS['TYPO3_DB']->sql_select_db(TYPO3_db)
+			)) {
+				throw new RuntimeException('Could not connect to TYPO3 database.');
+			}
+		}
+	}
+
+	/**
+	 * Sets the arguments.
+	 *
+	 * @param array $arguments
+	 * @return void
+	 */
+	public function setArguments(array $arguments) {
+		$this->arguments = $arguments;
+	}
+
+	/**
+	 * Sets a backend user.
+	 *
+	 * @param t3lib_beUserAuth $backendUser
+	 * @return void
+	 */
+	public function setBackendUser(t3lib_beUserAuth $backendUser) {
+		$this->backendUser = $backendUser;
+	}
+
+	/**
+	 * Processes the request, validates it and send accordant cookie headers.
+	 *
+	 * @param array $configuration
+	 * @return void
+	 */
+	public function process(array $configuration) {
+		if (isset($this->arguments) && $this->areArgumentsValid() && $this->isTimeFrameValid()) {
+			$this->initializeDatabase();
+			if ($sessionId = $this->getSessionId()) {
+				$this->setSessionCookie($sessionId, t3lib_div::getIndpEnv('TYPO3_HOST_ONLY'));
+				exit;
+			}
+		}
+	}
+
+	/**
+	 * Determines whether the given arguments are valid.
+	 *
+	 * @return boolean
+	 */
+	protected function areArgumentsValid() {
+		$result = FALSE;
+
+		$arguments = $this->arguments;
+
+		if (isset($arguments['hash']) && $arguments['hash']) {
+			$hash = $arguments['hash'];
+			unset($arguments['hash']);
+			ksort($arguments);
+
+			$result = ($hash === sha1(serialize($arguments) . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']));
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Determines whether the request is withing a defined time frame of 20 seconds.
+	 *
+	 * @return boolean
+	 */
+	protected function isTimeFrameValid() {
+		return ($GLOBALS['EXEC_TIME'] <= $this->arguments['time'] + 20); 
+	}
+
+	/**
+	 * Gets the real session ID by the given SHA1 hashed value.
+	 *
+	 * @return string
+	 */
+	protected function getSessionId() {
+		$sessionId = NULL;
+
+		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+			'ses_id',
+			$this->backendUser->session_table,
+			'SHA1(ses_id)=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->arguments['id'], $this->backendUser->session_table)
+		);
+
+		if (count($rows)) {
+			$sessionId = $rows[0]['ses_id'];
+		}
+
+		return $sessionId;
+	}
+
+	/**
+	 * Sets the session cookie for the current disposal.
+	 *
+	 * @see t3lib_userAuth::setSessionCookie()
+	 * @param string $sessionId The session ID to be set
+	 * @param string $cookieDomain Domain to be used for the cookie
+	 * @return void
+	 */
+	protected function setSessionCookie($sessionId, $cookieDomain) {
+		$this->backendUser->newSessionID = TRUE;
+
+		$isSetSessionCookie = $this->backendUser->isSetSessionCookie();
+		$isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
+
+		if ($isSetSessionCookie || $isRefreshTimeBasedCookie) {
+			$settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
+
+			// If no cookie domain is set, use the base path:
+			$cookiePath = ($cookieDomain ? '/' : t3lib_div::getIndpEnv('TYPO3_SITE_PATH'));
+			// If the cookie lifetime is set, use it:
+			$cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
+			// Use the secure option when the current request is served by a secure connection:
+			$cookieSecure = (bool)$settings['cookieSecure'] && t3lib_div::getIndpEnv('TYPO3_SSL');
+			// Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
+			$cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
+
+			// Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
+			if ((int)$settings['cookieSecure'] !== 1 || t3lib_div::getIndpEnv('TYPO3_SSL')) {
+				setcookie(
+					$this->backendUser->name,
+					$sessionId,
+					$cookieExpire,
+					$cookiePath,
+					$cookieDomain,
+					$cookieSecure,
+					$cookieHttpOnly
+				);
+			} else {
+				throw new t3lib_exception(
+					'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
+					1254325546
+				);
+			}
+		}
+	}
+}
