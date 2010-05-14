@@ -3,6 +3,7 @@
 	* Added feature: Proper handling of request registration to ensure each request is only valid once
 	* Cleanup: Fixed PHPdoc comments
 	* Cleanup: Wrapped IFRAMEs with DIV
+	* Fixed bug: IFRAMEs take space and are not really invisible
 
 2010-05-13  Oliver Hader  <oliver@typo3.org>
 

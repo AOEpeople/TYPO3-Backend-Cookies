@@ -76,7 +76,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 
 		if ($content) {
 			$GLOBALS['TBE_TEMPLATE']->postCode .=
-				"\t<div style=\"width:0; height:0; visibility:hidden;\">\n" . $content . "\t</div>\n";
+				"\t<div style=\"width:0; height:0; display:none;\">\n" . $content . "\t</div>\n";
 		}
 	}
 
@@ -144,7 +144,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 */
 	protected function generateIFrame($url) {
 		$url = htmlspecialchars($url);
-		return "\t\t<iframe src=\"" . $url . "\"></iframe>\n";
+		return "\t\t<iframe src=\"" . $url . "\" height=\"0\" width=\"0\" frameborder=\"0\"></iframe>\n";
 	}
 
 	/**
