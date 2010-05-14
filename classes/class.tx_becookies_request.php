@@ -26,7 +26,7 @@
 ***************************************************************/
 
 /**
- * Request objects
+ * Request object
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
@@ -38,18 +38,22 @@ class tx_becookies_request {
 	 * @var integer
 	 */
 	protected $identifier;
+
 	/**
 	 * @var integer
 	 */
 	protected $timeStamp;
+
 	/**
 	 * @var integer
 	 */
 	protected $backendUserId;
+
 	/**
 	 * @var string
 	 */
 	protected $sessionId;
+
 	/**
 	 * @var string
 	 */
@@ -70,55 +74,123 @@ class tx_becookies_request {
 		$this->setTimeStamp($timeStamp);
 	}
 
+	/**
+	 * Sets the identifier.
+	 *
+	 * @param integer $identifier
+	 * @return tx_becookies_request
+	 */
 	public function setIdentifier($identifier) {
 		$this->identifier = $identifier;
 	}
 
+	/**
+	 * Sets the timestamp.
+	 *
+	 * @param integer $timeStamp
+	 * @return tx_becookies_request
+	 */
 	public function setTimeStamp($timeStamp) {
 		$this->timeStamp = $timeStamp;
 	}
 
+	/**
+	 * Sets the backend user id.
+	 *
+	 * @param integer $backendUserId
+	 * @return tx_becookies_request
+	 */
 	public function setBackendUserId($backendUserId) {
 		$this->backendUserId = $backendUserId;
 	}
 
+	/**
+	 * Sets the domain.
+	 *
+	 * @param string $domain
+	 * @return tx_becookies_request
+	 */
 	public function setDomain($domain) {
 		$this->domain = $domain;
 	}
 
+	/**
+	 * Sets the session id.
+	 *
+	 * @param string $sessionId
+	 * @return tx_becookies_request
+	 */
 	public function setSessionId($sessionId) {
 		$this->sessionId = $sessionId;
 	}
 
+	/**
+	 * Gets the identifier.
+	 *
+	 * @return integer
+	 */
 	public function getIdentifier() {
 		return $this->identifier;
 	}
 
+	/**
+	 * Gets the timestamp.
+	 *
+	 * @return integer
+	 */
 	public function getTimeStamp() {
 		return $this->timeStamp;
 	}
 
+	/**
+	 * Gets the backend user id.
+	 *
+	 * @return integer
+	 */
 	public function getBackendUserId() {
 		return $this->backendUserId;
 	}
 
+	/**
+	 * Gets the domain.
+	 *
+	 * @return string
+	 */
 	public function getDomain() {
 		return $this->domain;
 	}
 
+	/**
+	 * Gets the session id.
+	 *
+	 * @return string
+	 */
 	public function getSessionId() {
 		return $this->sessionId;
 	}
 
+	/**
+	 * Persists this object and returns the new identifier.
+	 *
+	 * @return integer
+	 */
 	public function persist() {
-		return $this->getRepository()->persist($this);
+		$this->setIdentifier($this->getRepository()->persist($this));
+		return $this->getIdentifier();
 	}
 
+	/**
+	 * Removes this object.
+	 *
+	 * @return void
+	 */
 	public function remove() {
 		return $this->getRepository()->remove($this);
 	}
 
 	/**
+	 * Gets a repository object.
+	 *
 	 * @return tx_becookies_requestRepository
 	 */
 	protected function getRepository() {

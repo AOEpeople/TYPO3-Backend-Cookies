@@ -58,6 +58,12 @@ class tx_becookies_requestRepository implements t3lib_Singleton {
 		return $GLOBALS['TYPO3_DB']->sql_insert_id();
 	}
 
+	/**
+	 * Removes a request element.
+	 *
+	 * @param tx_becookies_request $request
+	 * @return void
+	 */
 	public function remove(tx_becookies_request $request) {
 		if (!$request->getIdentifier()) {
 			throw new LogicException('Cannot remove element without an identifier.');
@@ -90,6 +96,12 @@ class tx_becookies_requestRepository implements t3lib_Singleton {
 		return $request;
 	}
 
+	/**
+	 * Purges expired request elements.
+	 *
+	 * @param integer $exiresAfter
+	 * @return void
+	 */
 	public function purge($exiresAfter) {
 		$exiresAfter = intval($exiresAfter);
 
