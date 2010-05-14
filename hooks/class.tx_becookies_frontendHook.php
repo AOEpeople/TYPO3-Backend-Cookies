@@ -161,7 +161,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 				$sessionId = $request->getSessionId();
 			}
 
-			#$request->remove();
+			$request->remove();
 		}
 
 		return $sessionId;
