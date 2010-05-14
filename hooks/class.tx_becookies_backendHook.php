@@ -64,12 +64,19 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function process(array $configuration, TYPO3backend $parent) {
+		$content = '';
+
 		foreach ($this->getAllDomains() as $domain) {
 			if ($this->isRequired($domain)) {
 				$requestId = $this->createRequest($domain);
 				$url = $this->generateUrl($domain, $requestId);
-				$GLOBALS['TBE_TEMPLATE']->postCode .= $this->generateIFrame($url);
+				$content .= $this->generateIFrame($url);
 			}
+		}
+
+		if ($content) {
+			$GLOBALS['TBE_TEMPLATE']->postCode .=
+				"\t<div style=\"width:0; height:0; visibility:hidden;\">\n" . $content . "\t</div>\n";
 		}
 	}
 
@@ -136,8 +143,8 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * @return string
 	 */
 	protected function generateIFrame($url) {
-		#$url = htmlspecialchars($url);
-		return "\t" . '<iframe src="' . $url . '" style="width: 0; height: 0; visibility: hidden;"></iframe>' . "\n";
+		$url = htmlspecialchars($url);
+		return "\t\t<iframe src=\"" . $url . "\"></iframe>\n";
 	}
 
 	/**
