@@ -144,7 +144,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 */
 	protected function generateIFrame($url) {
 		$url = htmlspecialchars($url);
-		return "\t\t<iframe src=\"" . $url . "\" height=\"0\" width=\"0\" frameborder=\"0\"></iframe>\n";
+		return "\t\t<iframe src=\"" . $url . "\" height=\"0\" width=\"0\" frameborder=\"0\ style=\"width:0;height:0;\"></iframe>\n";
 	}
 
 	/**
