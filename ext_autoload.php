@@ -6,5 +6,7 @@ $extensionPath = t3lib_extMgm::extPath('becookies');
 return array(
 	'tx_becookies_backendhook' => $extensionPath . 'hooks/class.tx_becookies_backendHook.php',
 	'tx_becookies_frontendhook' => $extensionPath . 'hooks/class.tx_becookies_frontendHook.php',
+	'tx_becookies_request' => $extensionPath . 'classes/class.tx_becookies_request.php',
+	'tx_becookies_requestrepository' => $extensionPath . 'classes/class.tx_becookies_requestRepository.php',
 );
 ?>

@@ -66,10 +66,29 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	public function process(array $configuration, TYPO3backend $parent) {
 		foreach ($this->getAllDomains() as $domain) {
 			if ($this->isRequired($domain)) {
-				$url = $this->generateUrl($domain);
+				$requestId = $this->createRequest($domain);
+				$url = $this->generateUrl($domain, $requestId);
 				$GLOBALS['TBE_TEMPLATE']->postCode .= $this->generateIFrame($url);
 			}
 		}
+	}
+
+	/**
+	 * Creates a request element.
+	 *
+	 * @param string $domain
+	 * @return integer
+	 */
+	protected function createRequest($domain) {
+		/* @var $request tx_becookies_request */
+		$request = t3lib_div::makeInstance(
+			'tx_becookies_request',
+			$this->backendUser->user['uid'],
+			$this->backendUser->id,
+			$domain
+		);
+
+		return $request->persist();
 	}
 
 	/**
@@ -117,7 +136,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * @return string
 	 */
 	protected function generateIFrame($url) {
-		$url = htmlspecialchars($url);
+		#$url = htmlspecialchars($url);
 		return "\t" . '<iframe src="' . $url . '" style="width: 0; height: 0; visibility: hidden;"></iframe>' . "\n";
 	}
 
@@ -125,13 +144,14 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * Generates a frontend URL for a given domain.
 	 *
 	 * @param string $domain Domain to be used
+	 * @param integer $requestId Identifier of the request element
 	 * @return string
 	 */
-	protected function generateUrl($domain) {
+	protected function generateUrl($domain, $requestId) {
 		$scheme = (t3lib_div::getIndpEnv('TYPO3_SSL') ? 'https' : 'http');
 		$port = t3lib_div::getIndpEnv('TYPO3_PORT');
 		$host = $domain . (strpos($domain, ':') === FALSE && $port && $port != '80' ? ':' . $port : '');
-		$query = t3lib_div::implodeArrayForUrl('tx_becookies', $this->generateArguments($domain));
+		$query = t3lib_div::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
 		$url = $scheme . '://' . $host . '/index.php?' . $query;
 		return $url;
@@ -140,14 +160,13 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	/**
 	 * Generates the argument required to set the cookies with the frontend request.
 	 *
-	 * @param string $domain
+	 * @param integer $requestId Identifier of the request element
 	 * @return array
 	 */
-	protected function generateArguments($domain) {
+	protected function generateArguments($requestId) {
 		$arguments = array(
-			'id' => sha1($this->backendUser->id),
+			'id' => (string) $requestId,
 			'time' => (string) $GLOBALS['EXEC_TIME'],
-			'domain' => $domain,
 		);
 
 		ksort($arguments);

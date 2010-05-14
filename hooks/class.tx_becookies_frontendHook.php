@@ -34,6 +34,8 @@
  *
  */
 class tx_becookies_frontendHook implements t3lib_Singleton {
+	const VALUE_TimeFrame = 20;
+
 	/**
 	 * @var array
 	 */
@@ -100,6 +102,8 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	public function process(array $configuration) {
 		if (isset($this->arguments) && $this->areArgumentsValid() && $this->isTimeFrameValid()) {
 			$this->initializeDatabase();
+			$this->getRepository()->purge(self::VALUE_TimeFrame);
+
 			if ($sessionId = $this->getSessionId()) {
 				$this->setSessionCookie($sessionId, t3lib_div::getIndpEnv('TYPO3_HOST_ONLY'));
 				exit;
@@ -134,7 +138,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	 * @return boolean
 	 */
 	protected function isTimeFrameValid() {
-		return ($GLOBALS['EXEC_TIME'] <= $this->arguments['time'] + 20); 
+		return ($GLOBALS['EXEC_TIME'] <= $this->arguments['time'] + self::VALUE_TimeFrame);
 	}
 
 	/**
@@ -145,14 +149,19 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	protected function getSessionId() {
 		$sessionId = NULL;
 
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-			'ses_id',
-			$this->backendUser->session_table,
-			'SHA1(ses_id)=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->arguments['id'], $this->backendUser->session_table)
-		);
+		$request = $this->getRepository()->loadByIdentifier($this->arguments['id']);
 
-		if (count($rows)) {
-			$sessionId = $rows[0]['ses_id'];
+		if ($request) {
+			$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+
+			$isDomainValid = ($request->getDomain() === $currentHost || strpos($request->getDomain(), $currentHost . ':') === 0);
+			$isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= $request->getTimeStamp() + self::VALUE_TimeFrame);
+
+			if ($isDomainValid && $isTimeStampValid) {
+				$sessionId = $request->getSessionId();
+			}
+
+			#$request->remove();
 		}
 
 		return $sessionId;
@@ -202,5 +211,13 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 				);
 			}
 		}
+	}
+
+	/**
+	 * @return tx_becookies_requestRepository
+	 */
+	protected function getRepository() {
+		return new tx_becookies_requestRepository();
+		return t3lib_div::makeInstance('tx_becookies_requestRepository');
 	}
 }
