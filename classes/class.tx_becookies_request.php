@@ -197,3 +197,7 @@ class tx_becookies_request {
 		return t3lib_div::makeInstance('tx_becookies_requestRepository');
 	}
 }
+
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']);
+}

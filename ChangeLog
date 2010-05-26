@@ -1,6 +1,7 @@
 2010-05-26  Oliver Hader  <oliver@typo3.org>
 
 	* Cleanup: Remover hardcoded object creation
+	* Cleanup: Added missing XCLASS definitions
 
 2010-05-14  Oliver Hader  <oliver@typo3.org>
 

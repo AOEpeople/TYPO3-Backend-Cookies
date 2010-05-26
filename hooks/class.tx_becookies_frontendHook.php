@@ -221,3 +221,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 		return t3lib_div::makeInstance('tx_becookies_requestRepository');
 	}
 }
+
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_frontendHook.php']) {
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_frontendHook.php']);
+}
