@@ -194,7 +194,6 @@ class tx_becookies_request {
 	 * @return tx_becookies_requestRepository
 	 */
 	protected function getRepository() {
-		return new tx_becookies_requestRepository();
 		return t3lib_div::makeInstance('tx_becookies_requestRepository');
 	}
 }

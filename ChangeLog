@@ -1,3 +1,7 @@
+2010-05-26  Oliver Hader  <oliver@typo3.org>
+
+	* Cleanup: Remover hardcoded object creation
+
 2010-05-14  Oliver Hader  <oliver@typo3.org>
 
 	* Added feature: Proper handling of request registration to ensure each request is only valid once
