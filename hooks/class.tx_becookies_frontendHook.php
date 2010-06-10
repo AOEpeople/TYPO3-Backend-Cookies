@@ -100,7 +100,11 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function process(array $configuration) {
-		if (isset($this->arguments) && $this->areArgumentsValid() && $this->isTimeFrameValid()) {
+		if (!isset($this->arguments) || !count($this->arguments)) {
+			return;
+		}
+
+		if ($this->areArgumentsValid() && $this->isTimeFrameValid()) {
 			$this->initializeDatabase();
 			$this->getRepository()->purge(self::VALUE_TimeFrame);
 
@@ -109,6 +113,14 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 				exit;
 			}
 		}
+
+		t3lib_timeTrack::debug_typo3PrintError(
+			'Warning',
+			'No Backend Cookies were transferred to this domain.',
+			FALSE
+		);
+
+		exit;
 	}
 
 	/**
