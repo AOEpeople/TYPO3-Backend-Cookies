@@ -2,6 +2,7 @@
 
 	* Fixed bug: Missing quote in IFRAME attribute
 	* Fixed bug: Frontend website is loaded completely in IFRAME on failure
+	* Set version to 0.1.1
 
 2010-05-26  Oliver Hader  <oliver@typo3.org>
 

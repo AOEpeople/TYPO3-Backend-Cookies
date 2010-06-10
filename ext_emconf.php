@@ -3,7 +3,7 @@
 ########################################################################
 # Extension Manager/Repository config file for ext "becookies".
 #
-# Auto generated 26-05-2010 13:30
+# Auto generated 10-06-2010 14:00
 #
 # Manual updates:
 # Only the data in the array - everything else is removed by next
@@ -21,7 +21,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'conflicts' => '',
 	'priority' => '',
 	'module' => '',
-	'state' => 'alpha',
+	'state' => 'beta',
 	'internal' => '',
 	'uploadfolder' => 0,
 	'createDirs' => '',
@@ -29,7 +29,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'clearCacheOnLoad' => 1,
 	'lockType' => '',
 	'author_company' => '',
-	'version' => '0.1.0',
+	'version' => '0.1.1',
 	'constraints' => array(
 		'depends' => array(
 			'typo3' => '4.4.0-0.0.0',
@@ -39,7 +39,7 @@ $EM_CONF[$_EXTKEY] = array(
 		'suggests' => array(
 		),
 	),
-	'_md5_values_when_last_written' => 'a:10:{s:9:"ChangeLog";s:4:"62ba";s:10:"README.txt";s:4:"e98a";s:16:"ext_autoload.php";s:4:"54cc";s:12:"ext_icon.gif";s:4:"1bdc";s:17:"ext_localconf.php";s:4:"409f";s:14:"ext_tables.sql";s:4:"c6a4";s:38:"classes/class.tx_becookies_request.php";s:4:"b965";s:48:"classes/class.tx_becookies_requestRepository.php";s:4:"7b98";s:40:"hooks/class.tx_becookies_backendHook.php";s:4:"3279";s:41:"hooks/class.tx_becookies_frontendHook.php";s:4:"41fe";}',
+	'_md5_values_when_last_written' => 'a:10:{s:9:"ChangeLog";s:4:"2fcc";s:10:"README.txt";s:4:"e98a";s:16:"ext_autoload.php";s:4:"54cc";s:12:"ext_icon.gif";s:4:"1bdc";s:17:"ext_localconf.php";s:4:"409f";s:14:"ext_tables.sql";s:4:"c6a4";s:38:"classes/class.tx_becookies_request.php";s:4:"b965";s:48:"classes/class.tx_becookies_requestRepository.php";s:4:"7b98";s:40:"hooks/class.tx_becookies_backendHook.php";s:4:"ac72";s:41:"hooks/class.tx_becookies_frontendHook.php";s:4:"4470";}',
 	'suggests' => array(
 	),
 );
