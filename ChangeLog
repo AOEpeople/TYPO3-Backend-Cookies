@@ -1,6 +1,7 @@
 2010-07-14  Oliver Hader  <oliver@typo3.org>
 
 	* Fixed bug: Pre-processing hook of becookies must be one of the first ones
+	* Set version to 0.1.3
 
 2010-06-11  Oliver Hader  <oliver@typo3.org>
 
