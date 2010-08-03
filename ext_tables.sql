@@ -10,3 +10,10 @@ CREATE TABLE tx_becookies_request (
     
     PRIMARY KEY (uid)
 );
+
+#
+# Table structure for table 'sys_domain'
+#
+CREATE TABLE sys_domain (
+    tx_becookies_login tinyint(3) DEFAULT '0' NOT NULL
+);
