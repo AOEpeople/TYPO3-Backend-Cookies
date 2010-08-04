@@ -193,7 +193,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 			'*',
 			'sys_domain',
-			'redirectTo="" AND hidden=0'
+			'redirectTo="" AND hidden=0 AND tx_becookies_login=1'
 		);
 
 		if (is_array($rows)) {
