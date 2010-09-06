@@ -2,6 +2,7 @@
 
 	* Database: Changed storage engine to InnoDB
 	* Cleanup: Fixed formatting and PHP tags
+	* Fixed bug: Wrong dependency to TYPO3 4.3.0 (hooks in typo3/backend.php were first introduced with TYPO3 4.4.0)
 
 2010-08-03  Daniel Pötzinger  <daniel.poetzinger@aoemedia.de>
 
