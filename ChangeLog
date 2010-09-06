@@ -1,6 +1,7 @@
 2010-09-06  Oliver Hader  <oliver@typo3.org>
 
 	* Database: Changed storage engine to InnoDB
+	* Cleanup: Fixed formatting and PHP tags
 
 2010-08-03  Daniel Pötzinger  <daniel.poetzinger@aoemedia.de>
 
