@@ -9,7 +9,7 @@ CREATE TABLE tx_becookies_request (
 	domain varchar(255) DEFAULT '' NOT NULL,
     
     PRIMARY KEY (uid)
-);
+)	ENGINE=InnoDB;
 
 #
 # Table structure for table 'sys_domain'
