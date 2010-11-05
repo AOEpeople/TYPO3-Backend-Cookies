@@ -1,6 +1,7 @@
 2010-11-05  Oliver Hader  <oliver@typo3.org>
 
 	* Added compatibility in class loading for older TYPO3 versions
+	* Added patch files for compatibility with TYPO3 versions below 4.4.0
 
 2010-11-05  Oliver Hader  <oliver@typo3.org>
 
