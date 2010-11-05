@@ -62,6 +62,7 @@ class tx_becookies_common {
 	 */
 	public static function initializeClassFiles() {
 		if (self::isBelowVersion('4.3.0')) {
+			require_once PATH_t3lib . 'class.t3lib_userauth.php';
 			require_once PATH_t3lib . 'class.t3lib_userauthgroup.php';
 			require_once t3lib_extMgm::extPath('becookies') . 'compatibility/interface.t3lib_singleton.php';
 
