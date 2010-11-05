@@ -52,6 +52,24 @@ class tx_becookies_common {
 			$preprocessRequestHooks = $frontendHookItem;
 		}
 	}
+
+	/**
+	 * Initializes all class files as defined in the autoload file.
+	 *
+	 * @return void
+	 * @note There have been some requests to have becookies working on patched TYPO3 systems below 4.4.0/4.3.0.
+	 * @deprecated
+	 */
+	public static function initializeClassFiles() {
+		if (t3lib_div::int_from_ver(TYPO3_version) < 4003000) {
+			$autoloadFile = t3lib_extMgm::extPath('becookies') . 'ext_autoload.php';
+			$classFiles = require $autoloadFile;
+
+			foreach ($classFiles as $classFile) {
+				require_once $classFile;
+			}
+		}
+	}
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_common.php']) {

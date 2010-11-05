@@ -1,5 +1,9 @@
 2010-11-05  Oliver Hader  <oliver@typo3.org>
 
+	* Added compatibility in class loading for older TYPO3 versions
+
+2010-11-05  Oliver Hader  <oliver@typo3.org>
+
 	* Cleanup: Added missing XCLASS definitions
 	* Set version to 0.1.8
 
