@@ -88,7 +88,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 */
 	protected function createRequest($domain) {
 		/* @var $request tx_becookies_request */
-		if (self::isBelowVersion('4.3.0') === FALSE) {
+		if (tx_becookies_common::isBelowVersion('4.3.0') === FALSE) {
 			$request = t3lib_div::makeInstance(
 				'tx_becookies_request',
 				$this->backendUser->user['uid'],
