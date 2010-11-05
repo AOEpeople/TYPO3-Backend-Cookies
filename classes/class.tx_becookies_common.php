@@ -61,9 +61,7 @@ class tx_becookies_common {
 	 * @deprecated
 	 */
 	public static function initializeClassFiles() {
-		$typo3Version = t3lib_div::int_from_ver(TYPO3_version);
-
-		if ($typo3Version < 4003000) {
+		if (self::isBelowVersion('4.3.0')) {
 			require_once t3lib_extMgm::extPath('becookies') . 'compatibility/interface.t3lib_singleton.php';
 
 			$autoloadFile = t3lib_extMgm::extPath('becookies') . 'ext_autoload.php';
@@ -73,6 +71,16 @@ class tx_becookies_common {
 				require_once $classFile;
 			}
 		}
+	}
+
+	/**
+	 * Determines whether the currently used TYPO3 version is below a expected version.
+	 *
+	 * @param string $version The expected version (e.g. '4.4.1')
+	 * @return boolean
+	 */
+	public static function isBelowVersion($version) {
+		return (t3lib_div::int_from_ver(TYPO3_version) < t3lib_div::int_from_ver($version));
 	}
 }
 
