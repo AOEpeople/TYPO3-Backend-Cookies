@@ -1,3 +1,7 @@
+2010-11-05  Oliver Hader  <oliver@typo3.org>
+
+	* Cleanup: Added missing XCLASS definitions
+
 2010-09-06  Oliver Hader  <oliver@typo3.org>
 
 	* Database: Changed storage engine to InnoDB
