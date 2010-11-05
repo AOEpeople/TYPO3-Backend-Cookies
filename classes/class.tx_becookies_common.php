@@ -61,7 +61,11 @@ class tx_becookies_common {
 	 * @deprecated
 	 */
 	public static function initializeClassFiles() {
-		if (t3lib_div::int_from_ver(TYPO3_version) < 4003000) {
+		$typo3Version = t3lib_div::int_from_ver(TYPO3_version);
+
+		if ($typo3Version < 4003000) {
+			require_once t3lib_extMgm::extPath('becookies') . 'compatibility/interface.t3lib_singleton.php';
+
 			$autoloadFile = t3lib_extMgm::extPath('becookies') . 'ext_autoload.php';
 			$classFiles = require $autoloadFile;
 
