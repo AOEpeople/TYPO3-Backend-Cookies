@@ -1,6 +1,7 @@
 2010-11-05  Oliver Hader  <oliver@typo3.org>
 
 	* Cleanup: Added missing XCLASS definitions
+	* Set version to 0.1.8
 
 2010-09-06  Oliver Hader  <oliver@typo3.org>
 
