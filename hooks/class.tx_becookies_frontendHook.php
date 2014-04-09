@@ -68,7 +68,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 					$GLOBALS['TYPO3_DB']->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password) &&
 					$GLOBALS['TYPO3_DB']->sql_select_db(TYPO3_db)
 			)) {
-				throw new RuntimeException('Could not connect to TYPO3 database.');
+				$this->throwException( 'Could not connect to TYPO3 database.' );
 			}
 		}
 	}
@@ -104,23 +104,23 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 			return;
 		}
 
-		if ($this->areArgumentsValid() && $this->isTimeFrameValid()) {
-			$this->initializeDatabase();
-			$this->getRepository()->purge(self::VALUE_TimeFrame);
-
-			if ($sessionId = $this->getSessionId()) {
-				$this->setSessionCookie($sessionId, t3lib_div::getIndpEnv('TYPO3_HOST_ONLY'));
-				exit;
-			}
+		$exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . t3lib_div::getIndpEnv('HTTP_HOST') . '".';
+		if(FALSE === $this->areArgumentsValid()) {
+			$this->throwException( $exceptionMessage, 'arguments are not valid' );
+		}
+		if(FALSE === $this->isTimeFrameValid()) {
+			$this->throwException( $exceptionMessage, 'timeFrame is not valid: EXEC_TIME is '. $GLOBALS['EXEC_TIME'] . ', argumentsTime is ' . $this->arguments['time'] );
 		}
 
-		t3lib_timeTrack::debug_typo3PrintError(
-			'Warning',
-			'No Backend Cookies were transferred to this domain.',
-			FALSE
-		);
+		$this->initializeDatabase();
+		$this->getRepository()->purge(self::VALUE_TimeFrame);
 
-		exit;
+		if ($sessionId = $this->getSessionId()) {
+			$this->setSessionCookie($sessionId, t3lib_div::getIndpEnv('TYPO3_HOST_ONLY'));
+			exit;
+		}
+
+		$this->throwException( $exceptionMessage, 'no sessionId found' );
 	}
 
 	/**
@@ -231,6 +231,18 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	protected function getRepository() {
 		return new tx_becookies_requestRepository();
 		return t3lib_div::makeInstance('tx_becookies_requestRepository');
+	}
+
+	/**
+	 * @param string $message
+	 * @param string $reason
+	 * @throws RuntimeException
+	 */
+	private function throwException($message, $reason = '') {
+		if(FALSE === empty($reason)) {
+			$message .= ' (reason:' . $reason . ')';
+		}
+		throw new RuntimeException( $message );
 	}
 }
 
