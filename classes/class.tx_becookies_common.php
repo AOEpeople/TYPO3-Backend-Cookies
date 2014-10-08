@@ -82,7 +82,7 @@ class tx_becookies_common {
 	 * @return boolean
 	 */
 	public static function isBelowVersion($version) {
-		return (t3lib_div::int_from_ver(TYPO3_version) < t3lib_div::int_from_ver($version));
+		return (t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version) < t3lib_utility_VersionNumber::convertVersionNumberToInteger($version));
 	}
 }
 
