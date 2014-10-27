@@ -83,26 +83,15 @@ class tx_becookies_requestRepository implements t3lib_Singleton {
 
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
 		if (count($rows)) {
-			if (tx_becookies_common::isBelowVersion('4.3.0') === FALSE) {
-				$request = t3lib_div::makeInstance(
-					'tx_becookies_request',
-					$rows[0]['beuser'],
-					$rows[0]['session'],
-					$rows[0]['domain'],
-					$rows[0]['uid'],
-					$rows[0]['tstamp']
-				);
-			} else {
-				$request = new tx_becookies_request(
-					$rows[0]['beuser'],
-					$rows[0]['session'],
-					$rows[0]['domain'],
-					$rows[0]['uid'],
-					$rows[0]['tstamp']
-				);
-			}
+            $request = t3lib_div::makeInstance(
+                'tx_becookies_request',
+                $rows[0]['beuser'],
+                $rows[0]['session'],
+                $rows[0]['domain'],
+                $rows[0]['uid'],
+                $rows[0]['tstamp']
+            );
 		}
-
 		return $request;
 	}
 
