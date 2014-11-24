@@ -62,7 +62,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	 * @return void
 	 */
 	protected function initializeDatabase() {
-		if ($GLOBALS['TYPO3_DB']->link === FALSE) {
+		if ($GLOBALS['TYPO3_DB']->isConnected() === FALSE) {
 			if (!(
 					TYPO3_db_host && TYPO3_db_username && TYPO3_db_password && TYPO3_db &&
 					$GLOBALS['TYPO3_DB']->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password) &&
