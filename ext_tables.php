@@ -14,6 +14,6 @@ $tempColumns = array (
 );
 
 t3lib_div::loadTCA('sys_domain');
-t3lib_extMgm::addTCAcolumns('sys_domain', $tempColumns,1);
+t3lib_extMgm::addTCAcolumns('sys_domain', $tempColumns);
 t3lib_extMgm::addToAllTCAtypes('sys_domain', 'tx_becookies_login;;;;1-1-1');
 ?>
