@@ -25,6 +25,8 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Hook to set backend cookies using a frontend request.
  *
@@ -33,7 +35,7 @@
  * @subpackage hooks
  *
  */
-class tx_becookies_frontendHook implements t3lib_Singleton {
+class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	const VALUE_TimeFrame = 20;
 
 	/**
@@ -51,9 +53,9 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	 */
 	public function __construct() {
 		if (isset($_GET['tx_becookies']) && is_array($_GET['tx_becookies'])) {
-			$this->setArguments(t3lib_div::_GP('tx_becookies'));
+			$this->setArguments(GeneralUtility::_GP('tx_becookies'));
 		}
-		$this->setBackendUser(t3lib_div::makeInstance('t3lib_beUserAuth'));
+		$this->setBackendUser(GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Authentication\\BackendUserAuthentication'));
 	}
 
 	/**
@@ -86,10 +88,10 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	/**
 	 * Sets a backend user.
 	 *
-	 * @param t3lib_beUserAuth $backendUser
+	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(t3lib_beUserAuth $backendUser) {
+	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser) {
 		$this->backendUser = $backendUser;
 	}
 
@@ -104,7 +106,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 			return;
 		}
 
-		$exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . t3lib_div::getIndpEnv('HTTP_HOST') . '".';
+		$exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
 		if(FALSE === $this->areArgumentsValid()) {
 			$this->throwException( $exceptionMessage, 'arguments are not valid' );
 		}
@@ -116,7 +118,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 		$this->getRepository()->purge(self::VALUE_TimeFrame);
 
 		if ($sessionId = $this->getSessionId()) {
-			$this->setSessionCookie($sessionId, t3lib_div::getIndpEnv('TYPO3_HOST_ONLY'));
+			$this->setSessionCookie($sessionId, GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
 			exit;
 		}
 
@@ -164,7 +166,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 		$request = $this->getRepository()->loadByIdentifier($this->arguments['id']);
 
 		if ($request) {
-			$currentHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
+			$currentHost = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 
 			$isDomainValid = ($request->getDomain() === $currentHost || strpos($request->getDomain(), $currentHost . ':') === 0);
 			$isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= $request->getTimeStamp() + self::VALUE_TimeFrame);
@@ -197,16 +199,16 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 			$settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
 
 			// If no cookie domain is set, use the base path:
-			$cookiePath = ($cookieDomain ? '/' : t3lib_div::getIndpEnv('TYPO3_SITE_PATH'));
+			$cookiePath = ($cookieDomain ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH'));
 			// If the cookie lifetime is set, use it:
 			$cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
 			// Use the secure option when the current request is served by a secure connection:
-			$cookieSecure = (bool)$settings['cookieSecure'] && t3lib_div::getIndpEnv('TYPO3_SSL');
+			$cookieSecure = (bool)$settings['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
 			// Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
 			$cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
 			// Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
-			if ((int)$settings['cookieSecure'] !== 1 || t3lib_div::getIndpEnv('TYPO3_SSL')) {
+			if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL')) {
 				setcookie(
 					$this->backendUser->name,
 					$sessionId,
@@ -229,8 +231,7 @@ class tx_becookies_frontendHook implements t3lib_Singleton {
 	 * @return tx_becookies_requestRepository
 	 */
 	protected function getRepository() {
-		return new tx_becookies_requestRepository();
-		return t3lib_div::makeInstance('tx_becookies_requestRepository');
+		return GeneralUtility::makeInstance('tx_becookies_requestRepository');
 	}
 
 	/**

@@ -25,6 +25,8 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Hook to render IFAMES that call the accordant frontend URLs to set the cookies.
  *
@@ -33,9 +35,9 @@
  * @subpackage hooks
  *
  */
-class tx_becookies_backendHook implements t3lib_Singleton {
+class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
-	 * @var t3lib_beUserAuth
+	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
 	 */
 	protected $backendUser;
 
@@ -49,10 +51,10 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	/**
 	 * Sets a backend user.
 	 *
-	 * @param t3lib_beUserAuth $backendUser
+	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(t3lib_beUserAuth $backendUser) {
+	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser) {
 		$this->backendUser = $backendUser;
 	}
 
@@ -75,8 +77,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 		}
 
 		if ($content) {
-			$GLOBALS['TBE_TEMPLATE']->postCode .=
-				"\t<div style=\"width:0; height:0; display:none;\">\n" . $content . "\t</div>\n";
+			$GLOBALS['TBE_TEMPLATE']->postCode .= "\t<div style=\"width:0; height:0; display:none;\">\n" . $content . "\t</div>\n";
 		}
 	}
 
@@ -88,7 +89,7 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 */
 	protected function createRequest($domain) {
 		/* @var $request tx_becookies_request */
-        $request = t3lib_div::makeInstance(
+        $request = GeneralUtility::makeInstance(
             'tx_becookies_request',
             $this->backendUser->user['uid'],
             $this->backendUser->id,
@@ -104,8 +105,8 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * @return boolean
 	 */
 	protected function isRequired($domain) {
-		list($domain) = t3lib_div::trimExplode(':', $domain, TRUE, 2);
-		$isCurrentHost = (t3lib_div::getIndpEnv('TYPO3_HOST_ONLY') === $domain);
+		list($domain) = GeneralUtility::trimExplode(':', $domain, TRUE, 2);
+		$isCurrentHost = (GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY') === $domain);
 
 		return (!$isCurrentHost && !$this->matchesCookieDomain($domain));
 	}
@@ -154,10 +155,10 @@ class tx_becookies_backendHook implements t3lib_Singleton {
 	 * @return string
 	 */
 	protected function generateUrl($domain, $requestId) {
-		$scheme = (t3lib_div::getIndpEnv('TYPO3_SSL') ? 'https' : 'http');
-		$port = t3lib_div::getIndpEnv('TYPO3_PORT');
+		$scheme = (GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http');
+		$port = GeneralUtility::getIndpEnv('TYPO3_PORT');
 		$host = $domain . (strpos($domain, ':') === FALSE && $port && $port != '80' ? ':' . $port : '');
-		$query = t3lib_div::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
+		$query = GeneralUtility::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
 		$url = $scheme . '://' . $host . '/index.php?' . $query;
 		return $url;

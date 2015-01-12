@@ -25,6 +25,8 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Request repository
  *
@@ -33,7 +35,7 @@
  * @subpackage classes
  *
  */
-class tx_becookies_requestRepository implements t3lib_Singleton {
+class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterface {
 	const TABLE = 'tx_becookies_request';
 
 	/*
@@ -83,7 +85,7 @@ class tx_becookies_requestRepository implements t3lib_Singleton {
 
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
 		if (count($rows)) {
-            $request = t3lib_div::makeInstance(
+            $request = GeneralUtility::makeInstance(
                 'tx_becookies_request',
                 $rows[0]['beuser'],
                 $rows[0]['session'],
