@@ -44,7 +44,7 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	protected $arguments;
 
 	/**
-	 * @var t3lib_beUserAuth
+	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
 	 */
 	protected $backendUser;
 
@@ -184,10 +184,11 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Sets the session cookie for the current disposal.
 	 *
-	 * @see t3lib_userAuth::setSessionCookie()
+	 * @see \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication::setSessionCookie()
 	 * @param string $sessionId The session ID to be set
 	 * @param string $cookieDomain Domain to be used for the cookie
 	 * @return void
+	 * @throws \TYPO3\CMS\Core\Exception
 	 */
 	protected function setSessionCookie($sessionId, $cookieDomain) {
 		$this->backendUser->newSessionID = TRUE;
@@ -219,7 +220,7 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 					$cookieHttpOnly
 				);
 			} else {
-				throw new t3lib_exception(
+				throw new \TYPO3\CMS\Core\Exception(
 					'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
 					1254325546
 				);

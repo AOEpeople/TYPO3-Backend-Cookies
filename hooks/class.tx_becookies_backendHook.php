@@ -62,10 +62,10 @@ class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Sets accordant iframes to have the cookies defined.
 	 *
 	 * @param array $configuration
-	 * @param TYPO3backend $parent
+	 * @param \TYPO3\CMS\Backend\Controller\BackendController $parent
 	 * @return void
 	 */
-	public function process(array $configuration, TYPO3backend $parent) {
+	public function process(array $configuration, \TYPO3\CMS\Backend\Controller\BackendController $parent) {
 		$content = '';
 
 		foreach ($this->getAllDomains() as $domain) {
