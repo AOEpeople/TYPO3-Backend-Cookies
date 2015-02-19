@@ -36,7 +36,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  */
 class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
-	const VALUE_TimeFrame = 20;
+	const VALUE_TimeFrame = 40;
 
 	/**
 	 * @var array
@@ -147,7 +147,7 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
-	 * Determines whether the request is withing a defined time frame of 20 seconds.
+	 * Determines whether the request is withing a defined time frame of 40 seconds.
 	 *
 	 * @return boolean
 	 */
