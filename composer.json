@@ -1,5 +1,5 @@
 {
-    "name": "aoe/becookies",
+    "name": "typo3-ter/becookies",
     "description": "This extension allows to handle backend session cookies and sets them for view domains that are different to the backend domain",
     "type": "typo3-cms-extension",
     "homepage": "https://forge.typo3.org/projects/extension-becookies",
