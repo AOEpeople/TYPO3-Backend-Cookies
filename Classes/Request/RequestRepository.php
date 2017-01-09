@@ -1,4 +1,7 @@
 <?php
+
+namespace AOE\BeCookies\Request;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -25,6 +28,7 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -35,7 +39,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @subpackage classes
  *
  */
-class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterface {
+class RequestRepository implements SingletonInterface {
 	const TABLE = 'tx_becookies_request';
 
 	/*
@@ -44,9 +48,9 @@ class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterfa
 	 * @param tx_becookies_request $request
 	 * @return integer
 	 */
-	public function persist(tx_becookies_request $request) {
+	public function persist(Request $request) {
 		if ($request->getIdentifier()) {
-			throw new LogicException('Updating existing elements is not allowed.');
+			throw new \LogicException('Updating existing elements is not allowed.');
 		}
 
 		$fields = array(
@@ -63,12 +67,12 @@ class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterfa
 	/**
 	 * Removes a request element.
 	 *
-	 * @param tx_becookies_request $request
+	 * @param Request $request
 	 * @return void
 	 */
-	public function remove(tx_becookies_request $request) {
+	public function remove(Request $request) {
 		if (!$request->getIdentifier()) {
-			throw new LogicException('Cannot remove element without an identifier.');
+			throw new \LogicException('Cannot remove element without an identifier.');
 		}
 
 		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'uid=' . intval($request->getIdentifier()));
@@ -78,15 +82,17 @@ class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterfa
 	 * Loads a request element by identifier.
 	 *
 	 * @param integer $identifier
-	 * @return tx_becookies_request
+	 * @return Request|null
 	 */
 	public function loadByIdentifier($identifier) {
 		$request = NULL;
 
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
+
 		if (count($rows)) {
+			/** @var Request $request */
             $request = GeneralUtility::makeInstance(
-                'tx_becookies_request',
+                Request::class,
                 $rows[0]['beuser'],
                 $rows[0]['session'],
                 $rows[0]['domain'],
@@ -94,26 +100,24 @@ class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterfa
                 $rows[0]['tstamp']
             );
 		}
+
 		return $request;
 	}
 
 	/**
 	 * Purges expired request elements.
 	 *
-	 * @param integer $exiresAfter
+	 * @param integer $expiresAfter
+	 *
 	 * @return void
 	 */
-	public function purge($exiresAfter) {
-		$exiresAfter = intval($exiresAfter);
+	public function purge($expiresAfter) {
+		$expiresAfter = intval($expiresAfter);
 
-		if ($exiresAfter <= 0) {
-			throw new LogicException('Elements cannot expire immediatelly or in the past');
+		if ($expiresAfter <= 0) {
+			throw new \LogicException('Elements cannot expire immediatelly or in the past');
 		}
 
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'tstamp < ' . ($GLOBALS['EXEC_TIME'] - $exiresAfter));
+		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'tstamp < ' . ($GLOBALS['EXEC_TIME'] - $expiresAfter));
 	}
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_requestRepository.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_requestRepository.php']);
 }

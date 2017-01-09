@@ -1,4 +1,7 @@
 <?php
+
+namespace AOE\BeCookies\Hooks;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -25,6 +28,9 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use AOE\BeCookies\Request\RequestRepository;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -35,7 +41,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @subpackage hooks
  *
  */
-class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
+class FrontendHook implements SingletonInterface {
 	const VALUE_TimeFrame = 40;
 
 	/**
@@ -44,7 +50,7 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	protected $arguments;
 
 	/**
-	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
+	 * @var BackendUserAuthentication
 	 */
 	protected $backendUser;
 
@@ -55,7 +61,7 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 		if (isset($_GET['tx_becookies']) && is_array($_GET['tx_becookies'])) {
 			$this->setArguments(GeneralUtility::_GP('tx_becookies'));
 		}
-		$this->setBackendUser(GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Authentication\\BackendUserAuthentication'));
+		$this->setBackendUser(GeneralUtility::makeInstance(BackendUserAuthentication::class));
 	}
 
 	/**
@@ -88,10 +94,10 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Sets a backend user.
 	 *
-	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
+	 * @param BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser) {
+	public function setBackendUser(BackendUserAuthentication $backendUser) {
 		$this->backendUser = $backendUser;
 	}
 
@@ -229,25 +235,21 @@ class tx_becookies_frontendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
-	 * @return tx_becookies_requestRepository
+	 * @return RequestRepository
 	 */
 	protected function getRepository() {
-		return GeneralUtility::makeInstance('tx_becookies_requestRepository');
+		return GeneralUtility::makeInstance(RequestRepository::class);
 	}
 
 	/**
 	 * @param string $message
 	 * @param string $reason
-	 * @throws RuntimeException
+	 * @throws \RuntimeException
 	 */
 	private function throwException($message, $reason = '') {
 		if(FALSE === empty($reason)) {
 			$message .= ' (reason:' . $reason . ')';
 		}
-		throw new RuntimeException( $message );
+		throw new \RuntimeException( $message );
 	}
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_frontendHook.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_frontendHook.php']);
 }

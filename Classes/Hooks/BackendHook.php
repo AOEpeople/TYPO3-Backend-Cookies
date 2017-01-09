@@ -1,4 +1,7 @@
 <?php
+
+namespace AOE\BeCookies\Hooks;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -13,7 +16,7 @@
 *
 *  The GNU General Public License can be found at
 *  http://www.gnu.org/copyleft/gpl.html.
-*  A copy is found in the textfile GPL.txt and important notices to the license
+*  A copy is found in the text file GPL.txt and important notices to the license
 *  from the author is found in LICENSE.txt distributed with these scripts.
 *
 *
@@ -25,17 +28,21 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use AOE\BeCookies\Request\Request;
+use TYPO3\CMS\Backend\Controller\BackendController;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Hook to render IFAMES that call the accordant frontend URLs to set the cookies.
+ * Hook to render iFrames that call the accordant frontend URLs to set the cookies.
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
  * @subpackage hooks
  *
  */
-class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
+class BackendHook implements SingletonInterface {
 	/**
 	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
 	 */
@@ -51,21 +58,22 @@ class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Sets a backend user.
 	 *
-	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
+	 * @param BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser) {
+	public function setBackendUser(BackendUserAuthentication $backendUser) {
 		$this->backendUser = $backendUser;
 	}
 
 	/**
-	 * Sets accordant iframes to have the cookies defined.
+	 * Sets accordant iFrames to have the cookies defined.
 	 *
 	 * @param array $configuration
-	 * @param \TYPO3\CMS\Backend\Controller\BackendController $parent
+	 * @param BackendController $parent
 	 * @return void
 	 */
-	public function process(array $configuration, \TYPO3\CMS\Backend\Controller\BackendController $parent) {
+	public function process(array $configuration, BackendController $parent) {
+		throw new \Exception('BECOOOOOKIES');
 		$content = '';
 
 		foreach ($this->getAllDomains() as $domain) {
@@ -88,9 +96,9 @@ class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @return integer
 	 */
 	protected function createRequest($domain) {
-		/* @var $request tx_becookies_request */
+		/* @var Request $request */
         $request = GeneralUtility::makeInstance(
-            'tx_becookies_request',
+            Request::class,
             $this->backendUser->user['uid'],
             $this->backendUser->id,
             $domain
@@ -205,8 +213,4 @@ class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 
 		return $domains;
 	}
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_backendHook.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_backendHook.php']);
 }

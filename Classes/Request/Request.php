@@ -1,4 +1,7 @@
 <?php
+
+namespace AOE\BeCookies\Request;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -33,7 +36,7 @@
  * @subpackage classes
  *
  */
-class tx_becookies_request {
+class Request {
 	/**
 	 * @var integer
 	 */
@@ -62,7 +65,7 @@ class tx_becookies_request {
 	/**
 	 * @param integer $backendUserId
 	 * @param string $sessionId
-	 * @param string $hash
+	 * @param string $domain
 	 * @param integer $identifier
 	 * @param integer $timeStamp
 	 */
@@ -78,7 +81,6 @@ class tx_becookies_request {
 	 * Sets the identifier.
 	 *
 	 * @param integer $identifier
-	 * @return tx_becookies_request
 	 */
 	public function setIdentifier($identifier) {
 		$this->identifier = $identifier;
@@ -88,7 +90,6 @@ class tx_becookies_request {
 	 * Sets the timestamp.
 	 *
 	 * @param integer $timeStamp
-	 * @return tx_becookies_request
 	 */
 	public function setTimeStamp($timeStamp) {
 		$this->timeStamp = $timeStamp;
@@ -98,7 +99,6 @@ class tx_becookies_request {
 	 * Sets the backend user id.
 	 *
 	 * @param integer $backendUserId
-	 * @return tx_becookies_request
 	 */
 	public function setBackendUserId($backendUserId) {
 		$this->backendUserId = $backendUserId;
@@ -108,7 +108,6 @@ class tx_becookies_request {
 	 * Sets the domain.
 	 *
 	 * @param string $domain
-	 * @return tx_becookies_request
 	 */
 	public function setDomain($domain) {
 		$this->domain = $domain;
@@ -118,7 +117,6 @@ class tx_becookies_request {
 	 * Sets the session id.
 	 *
 	 * @param string $sessionId
-	 * @return tx_becookies_request
 	 */
 	public function setSessionId($sessionId) {
 		$this->sessionId = $sessionId;
@@ -181,23 +179,17 @@ class tx_becookies_request {
 
 	/**
 	 * Removes this object.
-	 *
-	 * @return void
 	 */
 	public function remove() {
-		return $this->getRepository()->remove($this);
+		$this->getRepository()->remove($this);
 	}
 
 	/**
 	 * Gets a repository object.
 	 *
-	 * @return tx_becookies_requestRepository
+	 * @return RequestRepository
 	 */
 	protected function getRepository() {
-		return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_becookies_requestRepository');
+		return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(RequestRepository::class);
 	}
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']);
 }
