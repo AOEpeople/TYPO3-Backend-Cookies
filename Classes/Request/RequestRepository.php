@@ -45,7 +45,7 @@ class RequestRepository implements SingletonInterface {
 	/*
 	 * Persists a request element.
 	 *
-	 * @param tx_becookies_request $request
+	 * @param Request $request
 	 * @return integer
 	 */
 	public function persist(Request $request) {
