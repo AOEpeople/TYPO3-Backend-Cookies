@@ -30,6 +30,7 @@ namespace AOE\BeCookies\Hooks;
 
 use AOE\BeCookies\Request\RequestRepository;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -116,9 +117,9 @@ class FrontendHook implements SingletonInterface {
 		if(FALSE === $this->areArgumentsValid()) {
 			$this->throwException( $exceptionMessage, 'arguments are not valid' );
 		}
-		if(FALSE === $this->isTimeFrameValid()) {
-			$this->throwException( $exceptionMessage, 'timeFrame is not valid: EXEC_TIME is '. $GLOBALS['EXEC_TIME'] . ', argumentsTime is ' . $this->arguments['time'] );
-		}
+//		if(FALSE === $this->isTimeFrameValid()) {
+//			$this->throwException( $exceptionMessage, 'timeFrame is not valid: EXEC_TIME is '. $GLOBALS['EXEC_TIME'] . ', argumentsTime is ' . $this->arguments['time'] );
+//		}
 
 		$this->initializeDatabase();
 		$this->getRepository()->purge(self::VALUE_TimeFrame);

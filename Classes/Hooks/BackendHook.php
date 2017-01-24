@@ -73,7 +73,6 @@ class BackendHook implements SingletonInterface {
 	 * @return void
 	 */
 	public function process(array $configuration, BackendController $parent) {
-		//throw new \Exception('BECOOOOOKIES');
 		$content = '';
 
 		foreach ($this->getAllDomains() as $domain) {

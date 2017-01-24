@@ -28,6 +28,9 @@ namespace AOE\BeCookies\Request;
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -40,14 +43,27 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  */
 class RequestRepository implements SingletonInterface {
-	const TABLE = 'tx_becookies_request';
 
-	/*
-	 * Persists a request element.
-	 *
-	 * @param Request $request
-	 * @return integer
-	 */
+    const TABLE = 'tx_becookies_request';
+
+    /**
+     * @var Connection
+     */
+    protected $connection;
+
+	public function __construct()
+    {
+        /** @var ConnectionPool $connectionPool */
+        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
+        $this->connection = $connectionPool->getConnectionForTable(self::TABLE);
+    }
+
+    /*
+     * Persists a request element.
+     *
+     * @param Request $request
+     * @return integer
+     */
 	public function persist(Request $request) {
 		if ($request->getIdentifier()) {
 			throw new \LogicException('Updating existing elements is not allowed.');
@@ -60,8 +76,11 @@ class RequestRepository implements SingletonInterface {
 			'tstamp' => ($request->getTimeStamp() ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME']),
 		);
 
-		$GLOBALS['TYPO3_DB']->exec_INSERTquery(self::TABLE, $fields);
-		return $GLOBALS['TYPO3_DB']->sql_insert_id();
+		$qb = $this->connection->createQueryBuilder();
+		$qb->insert(self::TABLE)->values($fields);
+		$qb->execute();
+
+		return $this->connection->lastInsertId(self::TABLE);
 	}
 
 	/**
@@ -75,7 +94,13 @@ class RequestRepository implements SingletonInterface {
 			throw new \LogicException('Cannot remove element without an identifier.');
 		}
 
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'uid=' . intval($request->getIdentifier()));
+		$qb = $this->connection->createQueryBuilder();
+		$qb
+            ->delete(self::TABLE)
+            ->where(
+		        $qb->expr()->eq('uid', $qb->createNamedParameter($request->getIdentifier(), \PDO::PARAM_INT))
+            )
+            ->execute();
 	}
 
 	/**
@@ -87,17 +112,24 @@ class RequestRepository implements SingletonInterface {
 	public function loadByIdentifier($identifier) {
 		$request = NULL;
 
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
+		$qb = $this->connection->createQueryBuilder();
+		$statement = $qb
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(
+                $qb->expr()->eq('uid', $qb->createNamedParameter($identifier, \PDO::PARAM_INT))
+            )
+            ->execute();
 
-		if (count($rows)) {
+		while ($rows = $statement->fetch()) {
 			/** @var Request $request */
             $request = GeneralUtility::makeInstance(
                 Request::class,
-                $rows[0]['beuser'],
-                $rows[0]['session'],
-                $rows[0]['domain'],
-                $rows[0]['uid'],
-                $rows[0]['tstamp']
+                $rows['beuser'],
+                $rows['session'],
+                $rows['domain'],
+                $rows['uid'],
+                $rows['tstamp']
             );
 		}
 
