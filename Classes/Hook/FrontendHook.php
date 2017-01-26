@@ -1,6 +1,5 @@
 <?php
-
-namespace AOE\BeCookies\Hooks;
+namespace AOE\Becookies\Hook;
 
 /***************************************************************
 *  Copyright notice
