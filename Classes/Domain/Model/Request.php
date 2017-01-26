@@ -1,5 +1,5 @@
 <?php
-namespace AOE\BeCookies\Domain\Model;
+namespace Aoe\Becookies\Domain\Model;
 
 /*
  * Copyright notice

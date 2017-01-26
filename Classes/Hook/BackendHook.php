@@ -108,7 +108,7 @@ class BackendHook implements SingletonInterface
             $this->backendUser->id,
             $domain
         );
-        return $this->requestRepository->persist($request);
+        return $this->getRequestRepository()->persist($request);
     }
 
     /**
