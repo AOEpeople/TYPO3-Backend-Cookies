@@ -81,14 +81,14 @@ class BackendHook implements SingletonInterface
         $content = '';
 
         foreach ($this->getAllDomains() as $domain) {
-            if ($this->isRequired($domain)) {
+            if (is_bool($this->isRequired($domain)) === true) {
                 $requestId = $this->createRequest($domain);
                 $url = $this->generateUrl($domain, $requestId);
                 $content .= $this->generateIFrame($url);
             }
         }
 
-        if ($content) {
+        if (is_string($content) === true) {
             $GLOBALS['TBE_TEMPLATE']->postCode .= '<div style="width:0; height:0; display:none;">' . $content . '</div>';
         }
     }
@@ -122,7 +122,7 @@ class BackendHook implements SingletonInterface
         list($domain) = GeneralUtility::trimExplode(':', $domain, true, 2);
         $isCurrentHost = (GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY') === $domain);
 
-        return (!$isCurrentHost && !$this->matchesCookieDomain($domain));
+        return (!$isCurrentHost && is_bool($this->matchesCookieDomain($domain)) === false);
     }
 
     /**
@@ -136,14 +136,14 @@ class BackendHook implements SingletonInterface
         $result = false;
         $cookieDomain = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'];
 
-        if ($cookieDomain) {
+        if (is_string($cookieDomain) === true) {
             if ($cookieDomain{0} == '/') {
-                if (@preg_match($cookieDomain, $domain, $match)) {
+                if (is_array(@preg_match($cookieDomain, $domain, $match)) === true) {
                     $result = true;
                 }
             } elseif ($cookieDomain === $domain) {
                 $result = true;
-            } elseif (preg_match('/' . preg_quote('.' . ltrim($cookieDomain, '.'), '/') . '$/', $domain)) {
+            } elseif (is_array(preg_match('/' . preg_quote('.' . ltrim($cookieDomain, '.'), '/') . '$/', $domain)) === true) {
                 $result = true;
             }
         }
@@ -172,9 +172,9 @@ class BackendHook implements SingletonInterface
      */
     protected function generateUrl($domain, $requestId)
     {
-        $scheme = (GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http');
+        $scheme = (is_string(GeneralUtility::getIndpEnv('TYPO3_SSL')) === true ? 'https' : 'http');
         $port = GeneralUtility::getIndpEnv('TYPO3_PORT');
-        $host = $domain . (strpos($domain, ':') === false && $port && $port != '80' ? ':' . $port : '');
+        $host = $domain . (strpos($domain, ':') === false && is_integer($port) === true && $port !== '80' ? ':' . $port : '');
         $query = GeneralUtility::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
         $url = $scheme . '://' . $host . '/index.php?' . $query;
@@ -211,7 +211,7 @@ class BackendHook implements SingletonInterface
         $domains = [];
         $rows = BackendUtility::getRecordsByField('sys_domain', 'tx_becookies_login', 1, 'redirectTo="" AND hidden = 0');
 
-        if (is_array($rows)) {
+        if (is_array($rows) === true) {
             foreach ($rows as $row) {
                 $domains[] = $row['domainName'];
             }
@@ -227,7 +227,7 @@ class BackendHook implements SingletonInterface
      */
     protected function getObjectManager()
     {
-        if (!($this->objectManager instanceof ObjectManager)) {
+        if ($this->objectManager instanceof ObjectManager === false) {
             $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         }
 
@@ -239,7 +239,7 @@ class BackendHook implements SingletonInterface
      */
     protected function getRequestRepository()
     {
-        if (!($this->requestRepository instanceof ObjectManager)) {
+        if ($this->requestRepository instanceof ObjectManager === false) {
             $this->requestRepository = $this->getObjectManager()->get(RequestRepository::class);
         }
 

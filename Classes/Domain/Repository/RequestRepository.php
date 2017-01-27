@@ -20,8 +20,6 @@ namespace AOE\BeCookies\Domain\Repository;
  */
 
 use Aoe\Becookies\Domain\Model\Request;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -36,6 +34,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class RequestRepository implements SingletonInterface
 {
 
+    /**
+     * @const TABLE becookie table.
+     */
     const TABLE = 'tx_becookies_request';
 
     /**
@@ -53,13 +54,6 @@ class RequestRepository implements SingletonInterface
         $this->connection = $this->connectionPool->getConnectionForTable(self::TABLE);
     }
 
-//    public function __construct()
-//    {
-//        /** @var ConnectionPool $connectionPool */
-//        $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-//        $this->connection = $connectionPool->getConnectionForTable(self::TABLE);
-//    }
-
     /*
      * Persists a request element.
      *
@@ -68,7 +62,7 @@ class RequestRepository implements SingletonInterface
      */
     public function persist(Request $request)
     {
-        if ($request->getIdentifier()) {
+        if (is_integer($request->getIdentifier()) === true) {
             throw new \LogicException('Updating existing elements is not allowed.');
         }
 
@@ -76,7 +70,7 @@ class RequestRepository implements SingletonInterface
             'beuser'  => $request->getBackendUserId(),
             'session' => $request->getSessionId(),
             'domain'  => $request->getDomain(),
-            'tstamp'  => ($request->getTimeStamp() ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME']),
+            'tstamp'  => (is_integer($request->getTimeStamp()) === true OR is_float($request->getTimeStamp()) === true) ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME'],
         ];
 
         $queryBuilder = $this->connection->createQueryBuilder();
@@ -94,7 +88,7 @@ class RequestRepository implements SingletonInterface
      */
     public function remove(Request $request)
     {
-        if (!$request->getIdentifier()) {
+        if (is_integer($request->getIdentifier()) === false) {
             throw new \LogicException('Cannot remove element without an identifier.');
         }
 
