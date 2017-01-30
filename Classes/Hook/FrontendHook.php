@@ -62,9 +62,12 @@ class FrontendHook implements SingletonInterface
      */
     public function __construct()
     {
-        if (isset($_GET['tx_becookies']) === true && is_array($_GET['tx_becookies']) === true) {
-            $this->setArguments(GeneralUtility::_GP('tx_becookies'));
+        if (isset($_GET['tx_becookies']) && is_array($_GET['tx_becookies'])) {
+            $this->setArguments(GeneralUtility::_GET('tx_becookies'));
+        } else {
+            $this->setArguments([]);
         }
+
         $this->setBackendUser(GeneralUtility::makeInstance(BackendUserAuthentication::class));
     }
 
@@ -98,11 +101,13 @@ class FrontendHook implements SingletonInterface
      */
     public function process(array $configuration)
     {
-        if (is_array($this->arguments) === false || count($this->arguments) === false) {
+        if ((!is_array($this->arguments)) || empty($this->arguments)) {
             return;
         }
 
-        $exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
+        $exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' .
+                            GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
+
         if (false === $this->areArgumentsValid()) {
             $this->throwException($exceptionMessage, 'arguments are not valid');
         }
@@ -110,7 +115,8 @@ class FrontendHook implements SingletonInterface
         $this->getRequestRepository()->purge(self::VALUE_TimeFrame);
 
         $sessionId = $this->getSessionId();
-        if (is_string($sessionId) === true) {
+
+        if (is_string($sessionId) && strlen($sessionId)) {
             $this->setSessionCookie($sessionId, GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
             exit;
         }
@@ -128,7 +134,7 @@ class FrontendHook implements SingletonInterface
         $result = false;
         $arguments = $this->arguments;
 
-        if (isset($arguments['hash']) === true && is_string($arguments['hash']) === true) {
+        if (isset($arguments['hash']) && is_string($arguments['hash'])) {
             $hash = $arguments['hash'];
             unset($arguments['hash']);
             ksort($arguments);
@@ -156,15 +162,15 @@ class FrontendHook implements SingletonInterface
      */
     protected function getSessionId()
     {
-        $sessionId = null;
+        $sessionId = '';
         $requestRepository = $this->getRequestRepository();
         $request = $requestRepository->loadByIdentifier($this->arguments['id']);
 
         if ($request) {
             $currentHost = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 
-            $isDomainValid = ($request->getDomain() === $currentHost || strpos($request->getDomain(), $currentHost . ':') === 0);
-            $isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= $request->getTimeStamp() + self::VALUE_TimeFrame);
+            $isDomainValid = (($request->getDomain() === $currentHost) || (strpos($request->getDomain(), $currentHost . ':') === 0));
+            $isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= ($request->getTimeStamp() + self::VALUE_TimeFrame));
 
             if ($isDomainValid && $isTimeStampValid) {
                 $sessionId = $request->getSessionId();
@@ -188,24 +194,30 @@ class FrontendHook implements SingletonInterface
     protected function setSessionCookie($sessionId, $cookieDomain)
     {
         $this->backendUser->newSessionID = true;
-
         $isSetSessionCookie = $this->backendUser->isSetSessionCookie();
         $isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
 
         if ($isSetSessionCookie === true || $isRefreshTimeBasedCookie === true) {
             $settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
-
-            // If no cookie domain is set, use the base path:
-            $cookiePath = (is_string($cookieDomain) === true ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH'));
-            // If the cookie lifetime is set, use it:
-            $cookieExpire = ($isRefreshTimeBasedCookie === true ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
-            // Use the secure option when the current request is served by a secure connection:
-            $cookieSecure = $settings['cookieSecure'] === true && GeneralUtility::getIndpEnv('TYPO3_SSL');
-            // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
-            $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
+            $isSSL = (GeneralUtility::getIndpEnv('TYPO3_SSL') === true);
+            $cookieSecure = is_numeric($settings['cookieSecure']) ? intval($settings['cookieSecure']) : 0;
 
             // Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
-            if ((int)$settings['cookieSecure'] !== 1 || is_string(GeneralUtility::getIndpEnv('TYPO3_SSL')) === true) {
+            if (($cookieSecure == 1) && (!$isSSL)) {
+                throw new \TYPO3\CMS\Core\Exception(
+                    'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
+                    1254325546
+                );
+            } else {
+                // If no cookie domain is set, use the base path:
+                $cookiePath = is_string($cookieDomain) ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH');
+                // If the cookie lifetime is set, use it:
+                $cookieExpire = ($isRefreshTimeBasedCookie === true ? ($GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime) : 0);
+                // Use the secure option when the current request is served by a secure connection:
+                $cookieSecure = $isSSL;
+                // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
+                $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
+
                 setcookie(
                     $this->backendUser->name,
                     $sessionId,
@@ -214,11 +226,6 @@ class FrontendHook implements SingletonInterface
                     $cookieDomain,
                     $cookieSecure,
                     $cookieHttpOnly
-                );
-            } else {
-                throw new \TYPO3\CMS\Core\Exception(
-                    'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
-                    1254325546
                 );
             }
         }
@@ -229,7 +236,7 @@ class FrontendHook implements SingletonInterface
      */
     protected function getObjectManager()
     {
-        if ($this->objectManager instanceof ObjectManager === false) {
+        if (!($this->objectManager instanceof ObjectManager)) {
             $this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         }
 
@@ -241,7 +248,7 @@ class FrontendHook implements SingletonInterface
      */
     protected function getRequestRepository()
     {
-        if ($this->requestRepository instanceof ObjectManager === false) {
+        if (!($this->requestRepository instanceof RequestRepository)) {
             $this->requestRepository = $this->getObjectManager()->get(RequestRepository::class);
         }
 
@@ -255,7 +262,7 @@ class FrontendHook implements SingletonInterface
      */
     private function throwException($message, $reason = '')
     {
-        if (false === empty($reason)) {
+        if (!empty($reason)) {
             $message .= ' (reason:' . $reason . ')';
         }
         throw new \RuntimeException($message);

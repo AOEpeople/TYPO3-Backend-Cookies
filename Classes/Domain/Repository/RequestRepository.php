@@ -50,6 +50,9 @@ class RequestRepository implements SingletonInterface
      */
     private $connectionPool;
 
+    /**
+     * Initializes class instance.
+     */
     public function initializeObject() {
         $this->connection = $this->connectionPool->getConnectionForTable(self::TABLE);
     }
@@ -62,7 +65,7 @@ class RequestRepository implements SingletonInterface
      */
     public function persist(Request $request)
     {
-        if (is_integer($request->getIdentifier()) === true) {
+        if (is_integer($request->getIdentifier())) {
             throw new \LogicException('Updating existing elements is not allowed.');
         }
 
@@ -70,7 +73,7 @@ class RequestRepository implements SingletonInterface
             'beuser'  => $request->getBackendUserId(),
             'session' => $request->getSessionId(),
             'domain'  => $request->getDomain(),
-            'tstamp'  => (is_integer($request->getTimeStamp()) === true ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME']),
+            'tstamp'  => is_integer($request->getTimeStamp()) ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME'],
         ];
 
         $queryBuilder = $this->connection->createQueryBuilder();
@@ -83,22 +86,20 @@ class RequestRepository implements SingletonInterface
     /**
      * Removes a request element.
      *
-     * @param Request $request
+     * @param  Request $request
      * @return void
      */
     public function remove(Request $request)
     {
-        if (is_integer($request->getIdentifier()) === false) {
-            throw new \LogicException('Cannot remove element without an identifier.');
+        if (is_integer($request->getIdentifier())) {
+            $queryBuilder = $this->connection->createQueryBuilder();
+            $queryBuilder
+                ->delete(self::TABLE)
+                ->where($queryBuilder->expr()->eq(
+                    'uid', $queryBuilder->createNamedParameter($request->getIdentifier(), \PDO::PARAM_INT)
+                ))
+                ->execute();
         }
-
-        $queryBuilder = $this->connection->createQueryBuilder();
-        $queryBuilder
-            ->delete(self::TABLE)
-            ->where($queryBuilder->expr()->eq(
-                'uid', $queryBuilder->createNamedParameter($request->getIdentifier(), \PDO::PARAM_INT)
-            ))
-            ->execute();
     }
 
     /**
