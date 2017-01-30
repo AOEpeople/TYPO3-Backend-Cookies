@@ -70,7 +70,7 @@ class RequestRepository implements SingletonInterface
             'beuser'  => $request->getBackendUserId(),
             'session' => $request->getSessionId(),
             'domain'  => $request->getDomain(),
-            'tstamp'  => (is_integer($request->getTimeStamp()) === true OR is_float($request->getTimeStamp()) === true) ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME'],
+            'tstamp'  => (is_integer($request->getTimeStamp()) === true ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME']),
         ];
 
         $queryBuilder = $this->connection->createQueryBuilder();

@@ -81,7 +81,7 @@ class BackendHook implements SingletonInterface
         $content = '';
 
         foreach ($this->getAllDomains() as $domain) {
-            if (is_bool($this->isRequired($domain)) === true) {
+            if ($this->isRequired($domain) === true) {
                 $requestId = $this->createRequest($domain);
                 $url = $this->generateUrl($domain, $requestId);
                 $content .= $this->generateIFrame($url);
@@ -122,7 +122,7 @@ class BackendHook implements SingletonInterface
         list($domain) = GeneralUtility::trimExplode(':', $domain, true, 2);
         $isCurrentHost = (GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY') === $domain);
 
-        return (!$isCurrentHost && is_bool($this->matchesCookieDomain($domain)) === false);
+        return (!$isCurrentHost && $this->matchesCookieDomain($domain) === false);
     }
 
     /**
@@ -138,12 +138,12 @@ class BackendHook implements SingletonInterface
 
         if (is_string($cookieDomain) === true) {
             if ($cookieDomain{0} == '/') {
-                if (is_array(@preg_match($cookieDomain, $domain, $match)) === true) {
+                if (@preg_match($cookieDomain, $domain, $match) === true) {
                     $result = true;
                 }
             } elseif ($cookieDomain === $domain) {
                 $result = true;
-            } elseif (is_array(preg_match('/' . preg_quote('.' . ltrim($cookieDomain, '.'), '/') . '$/', $domain)) === true) {
+            } elseif (preg_match('/' . preg_quote('.' . ltrim($cookieDomain, '.'), '/') . '$/', $domain) === true) {
                 $result = true;
             }
         }

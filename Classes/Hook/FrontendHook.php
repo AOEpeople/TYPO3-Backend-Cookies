@@ -109,7 +109,8 @@ class FrontendHook implements SingletonInterface
 
         $this->getRequestRepository()->purge(self::VALUE_TimeFrame);
 
-        if ($sessionId = $this->getSessionId()) {
+        $sessionId = $this->getSessionId();
+        if (is_string($sessionId) === true) {
             $this->setSessionCookie($sessionId, GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY'));
             exit;
         }
@@ -191,15 +192,15 @@ class FrontendHook implements SingletonInterface
         $isSetSessionCookie = $this->backendUser->isSetSessionCookie();
         $isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
 
-        if (is_bool($isSetSessionCookie) === true || is_bool($isRefreshTimeBasedCookie) === true) {
+        if ($isSetSessionCookie === true || $isRefreshTimeBasedCookie === true) {
             $settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
 
             // If no cookie domain is set, use the base path:
             $cookiePath = (is_string($cookieDomain) === true ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH'));
             // If the cookie lifetime is set, use it:
-            $cookieExpire = (is_bool($isRefreshTimeBasedCookie) === true ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
+            $cookieExpire = ($isRefreshTimeBasedCookie === true ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
             // Use the secure option when the current request is served by a secure connection:
-            $cookieSecure = is_bool($settings['cookieSecure']) === true && GeneralUtility::getIndpEnv('TYPO3_SSL');
+            $cookieSecure = $settings['cookieSecure'] === true && GeneralUtility::getIndpEnv('TYPO3_SSL');
             // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
             $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
