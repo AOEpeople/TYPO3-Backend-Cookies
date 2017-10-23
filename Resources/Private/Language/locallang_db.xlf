@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" original="messages" date="2012-07-06T08:52:08Z" product-name="becookies">
+        <header/>
+        <body>
+            <trans-unit id="sys_domain.tx_becookies_login" xml:space="preserve">
+                <source>Backend log in for this domain</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
