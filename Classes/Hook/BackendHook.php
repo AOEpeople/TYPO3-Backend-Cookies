@@ -24,6 +24,7 @@ use Aoe\Becookies\Domain\Repository\RequestRepository;
 use TYPO3\CMS\Backend\Controller\BackendController;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
@@ -215,7 +216,18 @@ class BackendHook implements SingletonInterface
     protected function getAllDomains()
     {
         $domains = [];
-        $rows = BackendUtility::getRecordsByField('sys_domain', 'tx_becookies_login', 1, 'redirectTo="" AND hidden = 0');
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('sys_domain');
+
+        $rows = $queryBuilder
+            ->select('domainName')
+            ->from('sys_domain')
+            ->where(
+                $queryBuilder->expr()->eq('tx_becookies_login', $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)),
+                $queryBuilder->expr()->eq('redirectTo', $queryBuilder->createNamedParameter(''))
+            )
+            ->execute()
+            ->fetchAll();
 
         if (is_array($rows)) {
             foreach ($rows as $row) {
