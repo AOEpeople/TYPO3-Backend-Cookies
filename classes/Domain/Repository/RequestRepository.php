@@ -1,4 +1,6 @@
 <?php
+namespace Aoe\Becookies\Domain\Repository;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -35,7 +37,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @subpackage classes
  *
  */
-class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterface {
+class RequestRepository implements \TYPO3\CMS\Core\SingletonInterface {
 	const TABLE = 'tx_becookies_request';
 
 	/*
@@ -114,6 +116,3 @@ class tx_becookies_requestRepository implements \TYPO3\CMS\Core\SingletonInterfa
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_requestRepository.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_requestRepository.php']);
-}

@@ -1,4 +1,6 @@
 <?php
+namespace Aoe\Becookies\Domain\Model;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -25,15 +27,17 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use Aoe\Becookies\Domain\Repository\RequestRepository;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * Request object
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
- * @subpackage classes
  *
  */
-class tx_becookies_request {
+class Request {
 	/**
 	 * @var integer
 	 */
@@ -194,10 +198,7 @@ class tx_becookies_request {
 	 * @return tx_becookies_requestRepository
 	 */
 	protected function getRepository() {
-		return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_becookies_requestRepository');
+		return GeneralUtility::makeInstance(RequestRepository::class);
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_request.php']);
-}

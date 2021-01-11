@@ -1,4 +1,6 @@
 <?php
+namespace Aoe\Becookies\Typo3\Hook;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -32,10 +34,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
- * @subpackage hooks
  *
  */
-class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
+class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
 	 */
@@ -207,6 +208,3 @@ class tx_becookies_backendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_backendHook.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/hooks/class.tx_becookies_backendHook.php']);
-}

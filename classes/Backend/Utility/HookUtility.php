@@ -1,4 +1,6 @@
 <?php
+namespace Aoe\Becookies\Backend\Utility;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -30,19 +32,18 @@
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
- * @subpackage classes
  *
  */
-class tx_becookies_common {
+class HookUtility {
 	/**
 	 * Initializes the frontend hook.
 	 *
 	 * @return void
 	 */
 	public static function initializeFrontendHook() {
-		$frontendHookItem = array(
-			'becookies' => 'EXT:becookies/hooks/class.tx_becookies_frontendHook.php:tx_becookies_frontendHook->process'
-		);
+		$frontendHookItem = [
+			'becookies' => \Aoe\Becookies\Typo3\Hook\FrontendHook::class . '->process'
+		];
 
 		$preprocessRequestHooks =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/index_ts.php']['preprocessRequest'];
 
@@ -54,6 +55,3 @@ class tx_becookies_common {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_common.php']) {
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/becookies/classes/class.tx_becookies_common.php']);
-}
