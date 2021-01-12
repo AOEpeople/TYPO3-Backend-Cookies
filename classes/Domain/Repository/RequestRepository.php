@@ -27,26 +27,26 @@ namespace Aoe\Becookies\Domain\Repository;
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use Aoe\Becookies\Domain\Model\Request;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Request repository
  *
  * @author Oliver Hader <oliver@typo3.org>
  * @package becookies
- * @subpackage classes
  *
  */
-class RequestRepository implements \TYPO3\CMS\Core\SingletonInterface {
-	const TABLE = 'tx_becookies_request';
+class RequestRepository extends Repository {
 
 	/*
 	 * Persists a request element.
 	 *
-	 * @param tx_becookies_request $request
+	 * @param Request $request
 	 * @return integer
 	 */
-	public function persist(tx_becookies_request $request) {
+	public function persist(Request $request) {
 		if ($request->getIdentifier()) {
 			throw new LogicException('Updating existing elements is not allowed.');
 		}
@@ -65,22 +65,24 @@ class RequestRepository implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Removes a request element.
 	 *
-	 * @param tx_becookies_request $request
+	 * @param Request $request
 	 * @return void
 	 */
-	public function remove(tx_becookies_request $request) {
+	/*
+	public function remove(Request $request) {
 		if (!$request->getIdentifier()) {
 			throw new LogicException('Cannot remove element without an identifier.');
 		}
 
 		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'uid=' . intval($request->getIdentifier()));
 	}
+	*/
 
 	/**
 	 * Loads a request element by identifier.
 	 *
 	 * @param integer $identifier
-	 * @return tx_becookies_request
+	 * @return Request
 	 */
 	public function loadByIdentifier($identifier) {
 		$request = NULL;
@@ -88,7 +90,7 @@ class RequestRepository implements \TYPO3\CMS\Core\SingletonInterface {
 		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
 		if (count($rows)) {
             $request = GeneralUtility::makeInstance(
-                'tx_becookies_request',
+                Request::class,
                 $rows[0]['beuser'],
                 $rows[0]['session'],
                 $rows[0]['domain'],

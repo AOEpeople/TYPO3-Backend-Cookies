@@ -27,8 +27,8 @@ namespace Aoe\Becookies\Domain\Model;
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
-use Aoe\Becookies\Domain\Repository\RequestRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 /**
  * Request object
@@ -37,11 +37,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * @package becookies
  *
  */
-class Request {
-	/**
-	 * @var integer
-	 */
-	protected $identifier;
+class Request extends AbstractEntity {
 
 	/**
 	 * @var integer
@@ -67,32 +63,30 @@ class Request {
 	 * @param integer $backendUserId
 	 * @param string $sessionId
 	 * @param string $hash
-	 * @param integer $identifier
+	 * @param integer $uid
 	 * @param integer $timeStamp
 	 */
-	public function __construct($backendUserId, $sessionId, $domain, $identifier = NULL, $timeStamp = NULL) {
+	public function __construct($backendUserId, $sessionId, $domain, $uid = NULL, $timeStamp = NULL) {
 		$this->setBackendUserId($backendUserId);
 		$this->setSessionId($sessionId);
 		$this->setDomain($domain);
-		$this->setIdentifier($identifier);
+		$this->setUid($uid);
 		$this->setTimeStamp($timeStamp);
 	}
 
 	/**
-	 * Sets the identifier.
+	 * Sets the uid.
 	 *
-	 * @param integer $identifier
-	 * @return tx_becookies_request
+	 * @param integer $uid
 	 */
-	public function setIdentifier($identifier) {
-		$this->identifier = $identifier;
+	public function setUid($uid) {
+		$this->uid = $uid;
 	}
 
 	/**
 	 * Sets the timestamp.
 	 *
 	 * @param integer $timeStamp
-	 * @return tx_becookies_request
 	 */
 	public function setTimeStamp($timeStamp) {
 		$this->timeStamp = $timeStamp;
@@ -102,7 +96,6 @@ class Request {
 	 * Sets the backend user id.
 	 *
 	 * @param integer $backendUserId
-	 * @return tx_becookies_request
 	 */
 	public function setBackendUserId($backendUserId) {
 		$this->backendUserId = $backendUserId;
@@ -112,7 +105,6 @@ class Request {
 	 * Sets the domain.
 	 *
 	 * @param string $domain
-	 * @return tx_becookies_request
 	 */
 	public function setDomain($domain) {
 		$this->domain = $domain;
@@ -122,19 +114,9 @@ class Request {
 	 * Sets the session id.
 	 *
 	 * @param string $sessionId
-	 * @return tx_becookies_request
 	 */
 	public function setSessionId($sessionId) {
 		$this->sessionId = $sessionId;
-	}
-
-	/**
-	 * Gets the identifier.
-	 *
-	 * @return integer
-	 */
-	public function getIdentifier() {
-		return $this->identifier;
 	}
 
 	/**
@@ -171,34 +153,6 @@ class Request {
 	 */
 	public function getSessionId() {
 		return $this->sessionId;
-	}
-
-	/**
-	 * Persists this object and returns the new identifier.
-	 *
-	 * @return integer
-	 */
-	public function persist() {
-		$this->setIdentifier($this->getRepository()->persist($this));
-		return $this->getIdentifier();
-	}
-
-	/**
-	 * Removes this object.
-	 *
-	 * @return void
-	 */
-	public function remove() {
-		return $this->getRepository()->remove($this);
-	}
-
-	/**
-	 * Gets a repository object.
-	 *
-	 * @return tx_becookies_requestRepository
-	 */
-	protected function getRepository() {
-		return GeneralUtility::makeInstance(RequestRepository::class);
 	}
 }
 

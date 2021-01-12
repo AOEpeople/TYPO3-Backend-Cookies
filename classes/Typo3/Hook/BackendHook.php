@@ -27,7 +27,10 @@ namespace Aoe\Becookies\Typo3\Hook;
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use Aoe\Becookies\Domain\Repository\RequestRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Hook to render IFAMES that call the accordant frontend URLs to set the cookies.
@@ -43,9 +46,27 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	protected $backendUser;
 
 	/**
+     * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
+     */
+    private $objectManager;
+
+	/**
+	 * @var PersistenceManager
+	 */
+	private $persistenceManager;
+
+	/**
+	 * @var RequestRepository
+	 */
+	private $requestRepository;
+
+	/**
 	 * Creates this object.
 	 */
 	public function __construct() {
+		$this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+		$this->persistenceManager = $this->objectManager->get(PersistenceManager::class);
+        $this->requestRepository = $this->objectManager->get(RequestRepository::class);
 		$this->setBackendUser($GLOBALS['BE_USER']);
 	}
 
@@ -63,22 +84,23 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Sets accordant iframes to have the cookies defined.
 	 *
 	 * @param array $configuration
-	 * @param \TYPO3\CMS\Backend\Controller\BackendController $parent
 	 * @return void
 	 */
-	public function process(array $configuration, \TYPO3\CMS\Backend\Controller\BackendController $parent) {
+	public function process(&$configuration) {
 		$content = '';
 
-		foreach ($this->getAllDomains() as $domain) {
-			if ($this->isRequired($domain)) {
-				$requestId = $this->createRequest($domain);
-				$url = $this->generateUrl($domain, $requestId);
+		foreach ($this->getAllDomains() as $domainObj) {
+			if (!$this->matchesCookieDomain($domainObj->getHost)) {
+
+				$requestId = $this->createRequest($domainObj->getHost());
+				$url = $this->generateUrl($domainObj, $requestId);
 				$content .= $this->generateIFrame($url);
+
 			}
 		}
 
 		if ($content) {
-			$GLOBALS['TBE_TEMPLATE']->postCode .= "\t<div style=\"width:0; height:0; display:none;\">\n" . $content . "\t</div>\n";
+			$configuration['content'] .= "\t<div style=\"width:0; height:0; display:none;\">\n" . $content . "\t</div>\n";
 		}
 	}
 
@@ -89,27 +111,22 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @return integer
 	 */
 	protected function createRequest($domain) {
-		/* @var $request tx_becookies_request */
+		/* @var $request Request */
         $request = GeneralUtility::makeInstance(
-            'tx_becookies_request',
+            \Aoe\Becookies\Domain\Model\Request::class,
             $this->backendUser->user['uid'],
             $this->backendUser->id,
             $domain
-        );
-		return $request->persist();
-	}
+		);
 
-	/**
-	 * Determines whether it is required to set cookies for a domain.
-	 *
-	 * @param string $domain Domain to be checked
-	 * @return boolean
-	 */
-	protected function isRequired($domain) {
-		list($domain) = GeneralUtility::trimExplode(':', $domain, TRUE, 2);
-		$isCurrentHost = (GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY') === $domain);
+		if ($request->getUid() !== null) {
+			throw new LogicException('Updating existing elements is not allowed.');
+		}
 
-		return (!$isCurrentHost && !$this->matchesCookieDomain($domain));
+		$this->requestRepository->add($request);
+		$this->persistenceManager->persistAll();
+
+		return $request->getUid();
 	}
 
 	/**
@@ -151,18 +168,15 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Generates a frontend URL for a given domain.
 	 *
-	 * @param string $domain Domain to be used
+	 * @param \TYPO3\CMS\Core\Http\Uri $domainObj
 	 * @param integer $requestId Identifier of the request element
 	 * @return string
 	 */
-	protected function generateUrl($domain, $requestId) {
-		$scheme = (GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http');
-		$port = GeneralUtility::getIndpEnv('TYPO3_PORT');
-		$host = $domain . (strpos($domain, ':') === FALSE && $port && $port != '80' ? ':' . $port : '');
+	protected function generateUrl($domainObj, $requestId) {
+		// ToDo: ‪HttpUtility::buildQueryString
 		$query = GeneralUtility::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
-		$url = $scheme . '://' . $host . '/index.php?' . $query;
-		return $url;
+		return $domainObj->withQuery($query)->__toString();
 	}
 
 	/**
@@ -189,19 +203,11 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @return array All configured domains
 	 */
 	protected function getAllDomains() {
-		$domains = array();
+		$domains = [];
 
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-			'*',
-			'sys_domain',
-			'redirectTo="" AND hidden=0 AND tx_becookies_login=1'
-		);
-
-		if (is_array($rows)) {
-			foreach ($rows as $row) {
-				$domains[] = $row['domainName'];
-			}
-			$domains = array_unique($domains);
+		$siteFinder = new \TYPO3\CMS\Core\Site\SiteFinder;
+		foreach($siteFinder->getAllSites() as $siteConfiguration) {
+			$domains[] = $siteConfiguration->getBase();
 		}
 
 		return $domains;
