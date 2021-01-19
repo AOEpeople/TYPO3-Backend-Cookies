@@ -42,17 +42,17 @@ class Request extends AbstractEntity {
 	/**
 	 * @var integer
 	 */
-	protected $timeStamp;
+	protected $tstamp;
 
 	/**
 	 * @var integer
 	 */
-	protected $backendUserId;
+	protected $beuser;
 
 	/**
 	 * @var string
 	 */
-	protected $sessionId;
+	protected $session;
 
 	/**
 	 * @var string
@@ -60,18 +60,19 @@ class Request extends AbstractEntity {
 	protected $domain;
 
 	/**
-	 * @param integer $backendUserId
-	 * @param string $sessionId
-	 * @param string $hash
+	 * @param integer $beuser
+	 * @param string $session
+	 * @param string $domain
 	 * @param integer $uid
-	 * @param integer $timeStamp
+	 * @param integer $tstamp
 	 */
-	public function __construct($backendUserId, $sessionId, $domain, $uid = NULL, $timeStamp = NULL) {
-		$this->setBackendUserId($backendUserId);
-		$this->setSessionId($sessionId);
+	public function __construct($beuser, $session, $domain, $uid = null, $tstamp = null)
+	{
+		$this->setBeuser($beuser);
+		$this->setSession($session);
 		$this->setDomain($domain);
 		$this->setUid($uid);
-		$this->setTimeStamp($timeStamp);
+		$this->setTstamp($tstamp);
 	}
 
 	/**
@@ -79,26 +80,29 @@ class Request extends AbstractEntity {
 	 *
 	 * @param integer $uid
 	 */
-	public function setUid($uid) {
+	public function setUid($uid)
+	{
 		$this->uid = $uid;
 	}
 
 	/**
 	 * Sets the timestamp.
 	 *
-	 * @param integer $timeStamp
+	 * @param integer $tstamp
 	 */
-	public function setTimeStamp($timeStamp) {
-		$this->timeStamp = $timeStamp;
+	public function setTstamp($tstamp)
+	{
+		$this->tstamp = ($tstamp == null) ? time() : $tstamp;
 	}
 
 	/**
 	 * Sets the backend user id.
 	 *
-	 * @param integer $backendUserId
+	 * @param integer $beuser
 	 */
-	public function setBackendUserId($backendUserId) {
-		$this->backendUserId = $backendUserId;
+	public function setBeuser($beuser)
+	{
+		$this->beuser = $beuser;
 	}
 
 	/**
@@ -106,17 +110,19 @@ class Request extends AbstractEntity {
 	 *
 	 * @param string $domain
 	 */
-	public function setDomain($domain) {
+	public function setDomain($domain)
+	{
 		$this->domain = $domain;
 	}
 
 	/**
 	 * Sets the session id.
 	 *
-	 * @param string $sessionId
+	 * @param string $session
 	 */
-	public function setSessionId($sessionId) {
-		$this->sessionId = $sessionId;
+	public function setSession($session)
+	{
+		$this->session = $session;
 	}
 
 	/**
@@ -124,8 +130,9 @@ class Request extends AbstractEntity {
 	 *
 	 * @return integer
 	 */
-	public function getTimeStamp() {
-		return $this->timeStamp;
+	public function getTstamp()
+	{
+		return $this->tstamp;
 	}
 
 	/**
@@ -133,8 +140,9 @@ class Request extends AbstractEntity {
 	 *
 	 * @return integer
 	 */
-	public function getBackendUserId() {
-		return $this->backendUserId;
+	public function getBeuser()
+	{
+		return $this->beuser;
 	}
 
 	/**
@@ -142,7 +150,8 @@ class Request extends AbstractEntity {
 	 *
 	 * @return string
 	 */
-	public function getDomain() {
+	public function getDomain()
+	{
 		return $this->domain;
 	}
 
@@ -151,8 +160,9 @@ class Request extends AbstractEntity {
 	 *
 	 * @return string
 	 */
-	public function getSessionId() {
-		return $this->sessionId;
+	public function getSession()
+	{
+		return $this->session;
 	}
 }
 

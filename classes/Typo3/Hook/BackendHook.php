@@ -63,7 +63,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
 	 * Creates this object.
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		$this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
 		$this->persistenceManager = $this->objectManager->get(PersistenceManager::class);
         $this->requestRepository = $this->objectManager->get(RequestRepository::class);
@@ -76,7 +77,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser) {
+	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser)
+	{
 		$this->backendUser = $backendUser;
 	}
 
@@ -86,7 +88,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param array $configuration
 	 * @return void
 	 */
-	public function process(&$configuration) {
+	public function process(&$configuration)
+	{
 		$content = '';
 
 		foreach ($this->getAllDomains() as $domainObj) {
@@ -95,7 +98,6 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 				$requestId = $this->createRequest($domainObj->getHost());
 				$url = $this->generateUrl($domainObj, $requestId);
 				$content .= $this->generateIFrame($url);
-
 			}
 		}
 
@@ -110,7 +112,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $domain
 	 * @return integer
 	 */
-	protected function createRequest($domain) {
+	protected function createRequest($domain)
+	{
 		/* @var $request Request */
         $request = GeneralUtility::makeInstance(
             \Aoe\Becookies\Domain\Model\Request::class,
@@ -123,10 +126,7 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 			throw new LogicException('Updating existing elements is not allowed.');
 		}
 
-		$this->requestRepository->add($request);
-		$this->persistenceManager->persistAll();
-
-		return $request->getUid();
+		return $this->requestRepository->add($request);
 	}
 
 	/**
@@ -135,19 +135,20 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $domain Domain to be checked
 	 * @return boolean
 	 */
-	protected function matchesCookieDomain($domain) {
-		$result = FALSE;
+	protected function matchesCookieDomain($domain)
+	{
+		$result = false;
 		$cookieDomain = $GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieDomain'];
 
 		if ($cookieDomain) {
-			if ($cookieDomain{0} == '/') {
+			if (substr($cookieDomain, 0, 1) == '/') {
 				if (@preg_match($cookieDomain, $domain, $match)) {
-					$result = TRUE;
+					$result = true;
 				}
 			} elseif ($cookieDomain === $domain) {
-				$result = TRUE;
+				$result = true;
 			} elseif (preg_match('/' . preg_quote('.' . ltrim($cookieDomain, '.'), '/') . '$/', $domain)) {
-				$result = TRUE;
+				$result = true;
 			}
 		}
 
@@ -160,7 +161,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $url URL to be used as source
 	 * @return string
 	 */
-	protected function generateIFrame($url) {
+	protected function generateIFrame($url)
+	{
 		$url = htmlspecialchars($url);
 		return "\t\t<iframe src=\"" . $url . "\" height=\"0\" width=\"0\" frameborder=\"0\" style=\"width:0;height:0;\"></iframe>\n";
 	}
@@ -172,7 +174,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param integer $requestId Identifier of the request element
 	 * @return string
 	 */
-	protected function generateUrl($domainObj, $requestId) {
+	protected function generateUrl($domainObj, $requestId)
+	{
 		// ToDo: ‪HttpUtility::buildQueryString
 		$query = GeneralUtility::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
@@ -185,7 +188,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param integer $requestId Identifier of the request element
 	 * @return array
 	 */
-	protected function generateArguments($requestId) {
+	protected function generateArguments($requestId)
+	{
 		$arguments = array(
 			'id' => (string) $requestId,
 			'time' => (string) $GLOBALS['EXEC_TIME'],
@@ -202,7 +206,8 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 *
 	 * @return array All configured domains
 	 */
-	protected function getAllDomains() {
+	protected function getAllDomains()
+	{
 		$domains = [];
 
 		$siteFinder = new \TYPO3\CMS\Core\Site\SiteFinder;

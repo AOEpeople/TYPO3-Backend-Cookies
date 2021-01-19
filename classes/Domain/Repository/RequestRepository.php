@@ -28,8 +28,8 @@ namespace Aoe\Becookies\Domain\Repository;
 ***************************************************************/
 
 use Aoe\Becookies\Domain\Model\Request;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Request repository
@@ -38,7 +38,11 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
  * @package becookies
  *
  */
-class RequestRepository extends Repository {
+class RequestRepository {
+	/**
+	 * @var string
+	 */
+	const TABLE = 'tx_becookies_domain_model_request';
 
 	/*
 	 * Persists a request element.
@@ -46,20 +50,27 @@ class RequestRepository extends Repository {
 	 * @param Request $request
 	 * @return integer
 	 */
-	public function persist(Request $request) {
-		if ($request->getIdentifier()) {
+	public function add(Request $request)
+	{
+		if ($request->getUid()) {
 			throw new LogicException('Updating existing elements is not allowed.');
 		}
 
 		$fields = array(
-			'beuser' => $request->getBackendUserId(),
-			'session' => $request->getSessionId(),
+			'beuser' => $request->getBeuser(),
+			'session' => $request->getSession(),
 			'domain' => $request->getDomain(),
-			'tstamp' => ($request->getTimeStamp() ? $request->getTimeStamp() : $GLOBALS['EXEC_TIME']),
+			'tstamp' => ($request->getTstamp() ? $request->getTstamp() : $GLOBALS['EXEC_TIME']),
 		);
+		
 
-		$GLOBALS['TYPO3_DB']->exec_INSERTquery(self::TABLE, $fields);
-		return $GLOBALS['TYPO3_DB']->sql_insert_id();
+		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+		$queryBuilder
+			->insert(self::TABLE)
+			->values($fields)
+			->execute();
+
+		return $queryBuilder->getConnection()->lastInsertId();
 	}
 
 	/**
@@ -68,28 +79,43 @@ class RequestRepository extends Repository {
 	 * @param Request $request
 	 * @return void
 	 */
-	/*
-	public function remove(Request $request) {
-		if (!$request->getIdentifier()) {
+	public function remove(Request $request)
+	{
+		if (!$request->getUid()) {
 			throw new LogicException('Cannot remove element without an identifier.');
 		}
 
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'uid=' . intval($request->getIdentifier()));
+		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+		$queryBuilder
+			->delete(self::TABLE)
+			->where(
+				$queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($request->getUid(), \PDO::PARAM_INT))
+			)
+			->execute();
 	}
-	*/
 
 	/**
 	 * Loads a request element by identifier.
 	 *
-	 * @param integer $identifier
+	 * @param integer $uid
 	 * @return Request
 	 */
-	public function loadByIdentifier($identifier) {
-		$request = NULL;
+	public function findByUid($uid)
+	{
+		$request = null;
 
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', self::TABLE, 'uid=' . intval($identifier));
+		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+		$rows = $queryBuilder
+			->select('*')
+			->from(self::TABLE)
+			->where(
+				$queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
+			)
+			->execute()
+			->fetchAll();
+
 		if (count($rows)) {
-            $request = GeneralUtility::makeInstance(
+			$request = GeneralUtility::makeInstance(
                 Request::class,
                 $rows[0]['beuser'],
                 $rows[0]['session'],
@@ -98,6 +124,7 @@ class RequestRepository extends Repository {
                 $rows[0]['tstamp']
             );
 		}
+
 		return $request;
 	}
 
@@ -107,14 +134,21 @@ class RequestRepository extends Repository {
 	 * @param integer $exiresAfter
 	 * @return void
 	 */
-	public function purge($exiresAfter) {
+	public function purge($exiresAfter)
+	{
 		$exiresAfter = intval($exiresAfter);
 
 		if ($exiresAfter <= 0) {
 			throw new LogicException('Elements cannot expire immediatelly or in the past');
 		}
 
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(self::TABLE, 'tstamp < ' . ($GLOBALS['EXEC_TIME'] - $exiresAfter));
+		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+		$queryBuilder
+			->delete(self::TABLE)
+			->where(
+				$queryBuilder->expr()->lt('tstamp', ($GLOBALS['EXEC_TIME'] - $exiresAfter))
+			)
+			->execute();
 	}
 }
 
