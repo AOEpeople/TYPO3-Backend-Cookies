@@ -148,15 +148,25 @@ class Frontend implements MiddlewareInterface
 
 			// Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
 			if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL')) {
-				setcookie(
-					$this->backendUser->name,
-					$sessionId,
-					$cookieExpire,
-					$cookiePath,
-					$cookieDomain,
-					$cookieSecure,
-					$cookieHttpOnly
-				);
+				if (PHP_VERSION_ID < 70300) {
+					setcookie(
+						$this->backendUser->name,
+						$sessionId,
+						$cookieExpire,
+						"$cookiePath; samesite=None",
+						$cookieDomain,
+						$cookieSecure,
+						$cookieHttpOnly);
+				} else {
+					setcookie($this->backendUser->name, $sessionId, [
+						'expires' => $cookieExpire,
+						'path' => $cookiePath,
+						'domain' => $cookieDomain,
+						'samesite' => 'None',
+						'secure' => $cookieSecure,
+						'httponly' => $cookieHttpOnly,
+					]);
+				}
 			} else {
 				throw new \TYPO3\CMS\Core\Exception(
 					'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
