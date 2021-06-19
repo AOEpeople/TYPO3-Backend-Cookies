@@ -147,7 +147,7 @@ class Frontend implements MiddlewareInterface
 			$cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
 			// Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
-			if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL') === false) {
+			if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL') === true) {
 				if (PHP_VERSION_ID < 70300) {
 					setcookie(
 						$this->backendUser->name,
