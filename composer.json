@@ -32,5 +32,12 @@
         "psr-4": {
             "Aoe\\Becookies\\": "Classes/"
         }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "becookies",
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/Web"
+        }
     }
 }
