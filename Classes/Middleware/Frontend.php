@@ -27,8 +27,8 @@ class Frontend implements MiddlewareInterface
     protected $arguments = [];
 
     /**
-	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
-	 */
+     * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
+     */
     protected $backendUser;
     
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -37,6 +37,7 @@ class Frontend implements MiddlewareInterface
 
         if (isset($this->arguments['tx_becookies']) && is_array($this->arguments['tx_becookies'])) {
             $this->backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
+            $this->backendUser->initializeUserSessionManager();
 
             $exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
             if(false === $this->areArgumentsValid()) {
@@ -60,140 +61,140 @@ class Frontend implements MiddlewareInterface
     }
 
     /**
-	 * Determines whether the given arguments are valid.
-	 *
-	 * @return boolean
-	 */
-	protected function areArgumentsValid()
-	{
-		$result = false;
+     * Determines whether the given arguments are valid.
+     *
+     * @return boolean
+     */
+    protected function areArgumentsValid()
+    {
+        $result = false;
 
-		$arguments = $this->arguments['tx_becookies'];
+        $arguments = $this->arguments['tx_becookies'];
 
-		if (isset($arguments['hash']) && $arguments['hash']) {
-			$hash = $arguments['hash'];
-			unset($arguments['hash']);
-			ksort($arguments);
+        if (isset($arguments['hash']) && $arguments['hash']) {
+            $hash = $arguments['hash'];
+            unset($arguments['hash']);
+            ksort($arguments);
 
-			$result = ($hash === sha1(serialize($arguments) . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']));
-		}
+            $result = ($hash === sha1(serialize($arguments) . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']));
+        }
 
-		return $result;
+        return $result;
     }
     
     /**
-	 * Determines whether the request is withing a defined time frame of 40 seconds.
-	 *
-	 * @return boolean
-	 */
+     * Determines whether the request is withing a defined time frame of 40 seconds.
+     *
+     * @return boolean
+     */
     protected function isTimeFrameValid()
     {
-		return ($GLOBALS['EXEC_TIME'] <= $this->arguments['tx_becookies']['time'] + self::VALUE_TIME_FRAME);
-	}
+        return ($GLOBALS['EXEC_TIME'] <= $this->arguments['tx_becookies']['time'] + self::VALUE_TIME_FRAME);
+    }
 
-	/**
-	 * Gets the real session ID by the given SHA1 hashed value.
-	 *
-	 * @return string
-	 */
+    /**
+     * Gets the real session ID by the given SHA1 hashed value.
+     *
+     * @return string
+     */
     protected function getSessionId()
     {
-		$sessionId = null;
+        $sessionId = null;
 
-		$request = $this->getRepository()->findByUid($this->arguments['tx_becookies']['id']);
+        $request = $this->getRepository()->findByUid($this->arguments['tx_becookies']['id']);
 
-		if ($request) {
-			$currentHost = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
+        if ($request) {
+            $currentHost = GeneralUtility::getIndpEnv('TYPO3_HOST_ONLY');
 
-			$isDomainValid = ($request->getDomain() === $currentHost || strpos($request->getDomain(), $currentHost . ':') === 0);
-			$isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= $request->getTstamp() + self::VALUE_TIME_FRAME);
+            $isDomainValid = ($request->getDomain() === $currentHost || strpos($request->getDomain(), $currentHost . ':') === 0);
+            $isTimeStampValid = ($GLOBALS['EXEC_TIME'] <= $request->getTstamp() + self::VALUE_TIME_FRAME);
 
-			if ($isDomainValid && $isTimeStampValid) {
-				$sessionId = $request->getSession();
-			}
+            if ($isDomainValid && $isTimeStampValid) {
+                $sessionId = $request->getSession();
+            }
 
-			$this->getRepository()->remove($request);
-		}
+            $this->getRepository()->remove($request);
+        }
 
-		return $sessionId;
-	}
+        return $sessionId;
+    }
 
-	/**
-	 * Sets the session cookie for the current disposal.
-	 *
-	 * @see \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication::setSessionCookie()
-	 * @param string $sessionId The session ID to be set
-	 * @param string $cookieDomain Domain to be used for the cookie
-	 * @return void
-	 * @throws \TYPO3\CMS\Core\Exception
-	 */
+    /**
+     * Sets the session cookie for the current disposal.
+     *
+     * @see \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication::setSessionCookie()
+     * @param string $sessionId The session ID to be set
+     * @param string $cookieDomain Domain to be used for the cookie
+     * @return void
+     * @throws \TYPO3\CMS\Core\Exception
+     */
     protected function setSessionCookie($sessionId, $cookieDomain)
     {
-		$this->backendUser->newSessionID = true;
+        $this->backendUser->newSessionID = true;
 
-		$isSetSessionCookie = $this->backendUser->isSetSessionCookie();
-		$isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
+        $isSetSessionCookie = $this->backendUser->isSetSessionCookie();
+        $isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
 
-		if ($isSetSessionCookie || $isRefreshTimeBasedCookie) {
-			$settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
+        if ($isSetSessionCookie || $isRefreshTimeBasedCookie) {
+            $settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
 
-			// If no cookie domain is set, use the base path:
-			$cookiePath = ($cookieDomain ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH'));
-			// If the cookie lifetime is set, use it:
-			$cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
-			// Use the secure option when the current request is served by a secure connection:
-			$cookieSecure = (bool)$settings['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
-			// Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
-			$cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
+            // If no cookie domain is set, use the base path:
+            $cookiePath = ($cookieDomain ? '/' : GeneralUtility::getIndpEnv('TYPO3_SITE_PATH'));
+            // If the cookie lifetime is set, use it:
+            $cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
+            // Use the secure option when the current request is served by a secure connection:
+            $cookieSecure = (bool)$settings['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
+            // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
+            $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
-			// Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
-			if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL')) {
-				if (PHP_VERSION_ID < 70300) {
-					setcookie(
-						$this->backendUser->name,
-						$sessionId,
-						$cookieExpire,
-						"$cookiePath; samesite=None",
-						$cookieDomain,
-						$cookieSecure,
-						$cookieHttpOnly);
-				} else {
-					setcookie($this->backendUser->name, $sessionId, [
-						'expires' => $cookieExpire,
-						'path' => $cookiePath,
-						'domain' => $cookieDomain,
-						'samesite' => 'None',
-						'secure' => $cookieSecure,
-						'httponly' => $cookieHttpOnly,
-					]);
-				}
-			} else {
-				throw new \TYPO3\CMS\Core\Exception(
-					'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
-					1254325546
-				);
-			}
-		}
-	}
+            // Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
+            if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL')) {
+                if (PHP_VERSION_ID < 70300) {
+                    setcookie(
+                        $this->backendUser->name,
+                        $sessionId,
+                        $cookieExpire,
+                        "$cookiePath; samesite=None",
+                        $cookieDomain,
+                        $cookieSecure,
+                        $cookieHttpOnly);
+                } else {
+                    setcookie($this->backendUser->name, $sessionId, [
+                        'expires' => $cookieExpire,
+                        'path' => $cookiePath,
+                        'domain' => $cookieDomain,
+                        'samesite' => 'None',
+                        'secure' => $cookieSecure,
+                        'httponly' => $cookieHttpOnly,
+                    ]);
+                }
+            } else {
+                throw new \TYPO3\CMS\Core\Exception(
+                    'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
+                    1254325546
+                );
+            }
+        }
+    }
 
-	/**
-	 * @return RequestRepository
-	 */
-	protected function getRepository()
-	{
+    /**
+     * @return RequestRepository
+     */
+    protected function getRepository()
+    {
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
         return $objectManager->get(RequestRepository::class);
-	}
+    }
 
-	/**
-	 * @param string $message
-	 * @param string $reason
-	 * @throws RuntimeException
-	 */
-	private function throwException($message, $reason = '') {
-		if(FALSE === empty($reason)) {
-			$message .= ' (reason:' . $reason . ')';
-		}
-		throw new \RuntimeException( $message );
-	}
+    /**
+     * @param string $message
+     * @param string $reason
+     * @throws RuntimeException
+     */
+    private function throwException($message, $reason = '') {
+        if(FALSE === empty($reason)) {
+            $message .= ' (reason:' . $reason . ')';
+        }
+        throw new \RuntimeException( $message );
+    }
 }
