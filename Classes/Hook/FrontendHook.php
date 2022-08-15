@@ -197,6 +197,10 @@ class FrontendHook implements SingletonInterface
         $isSetSessionCookie = $this->backendUser->isSetSessionCookie();
         $isRefreshTimeBasedCookie = $this->backendUser->isRefreshTimeBasedCookie();
 
+        if (substr($cookieDomain, 0, 4) === 'www.') {
+            $cookieDomain = substr($cookieDomain, 4);
+        }
+
         if ($isSetSessionCookie === true || $isRefreshTimeBasedCookie === true) {
             $settings = $GLOBALS['TYPO3_CONF_VARS']['SYS'];
             $isSSL = (GeneralUtility::getIndpEnv('TYPO3_SSL') === true);
