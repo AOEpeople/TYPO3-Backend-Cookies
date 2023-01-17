@@ -37,7 +37,7 @@ class Frontend implements MiddlewareInterface
 
         if (isset($this->arguments['tx_becookies']) && is_array($this->arguments['tx_becookies'])) {
             $this->backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
-            $this->backendUser->initializeUserSessionManager();
+            $this->backendUser->start();
 
             $exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
             if(false === $this->areArgumentsValid()) {
@@ -143,37 +143,18 @@ class Frontend implements MiddlewareInterface
             // If the cookie lifetime is set, use it:
             $cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
             // Use the secure option when the current request is served by a secure connection:
-            $cookieSecure = (bool)$settings['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
+            $cookieSecure = GeneralUtility::getIndpEnv('TYPO3_SSL');
             // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
             $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
-            // Do not set cookie if cookieSecure is set to "1" (force HTTPS) and no secure channel is used:
-            if ((int)$settings['cookieSecure'] !== 1 || GeneralUtility::getIndpEnv('TYPO3_SSL')) {
-                if (PHP_VERSION_ID < 70300) {
-                    setcookie(
-                        $this->backendUser->name,
-                        $sessionId,
-                        $cookieExpire,
-                        "$cookiePath; samesite=None",
-                        $cookieDomain,
-                        $cookieSecure,
-                        $cookieHttpOnly);
-                } else {
-                    setcookie($this->backendUser->name, $sessionId, [
-                        'expires' => $cookieExpire,
-                        'path' => $cookiePath,
-                        'domain' => $cookieDomain,
-                        'samesite' => 'None',
-                        'secure' => $cookieSecure,
-                        'httponly' => $cookieHttpOnly,
-                    ]);
-                }
-            } else {
-                throw new \TYPO3\CMS\Core\Exception(
-                    'Cookie was not set since HTTPS was forced in $TYPO3_CONF_VARS[SYS][cookieSecure].',
-                    1254325546
-                );
-            }
+            setcookie($this->backendUser->name, $sessionId, [
+                'expires' => $cookieExpire,
+                'path' => $cookiePath,
+                'domain' => $cookieDomain,
+                'samesite' => 'None',
+                'secure' => $cookieSecure,
+                'httponly' => $cookieHttpOnly,
+            ]);
         }
     }
 

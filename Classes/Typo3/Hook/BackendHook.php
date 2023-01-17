@@ -176,7 +176,7 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	protected function generateUrl($domainObj, $requestId)
 	{
-		// ToDo: ‪HttpUtility::buildQueryString
+		// ToDo: HttpUtility::buildQueryString
 		$query = GeneralUtility::implodeArrayForUrl('tx_becookies', $this->generateArguments($requestId));
 
 		return $domainObj->withQuery($query)->__toString();
