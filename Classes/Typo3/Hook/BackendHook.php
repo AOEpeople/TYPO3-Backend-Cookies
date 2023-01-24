@@ -93,7 +93,7 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 		$content = '';
 
 		foreach ($this->getAllDomains() as $domainObj) {
-			if (!$this->matchesCookieDomain($domainObj->getHost)) {
+			if (!$this->matchesCookieDomain($domainObj->getHost())) {
 
 				$requestId = $this->createRequest($domainObj->getHost());
 				$url = $this->generateUrl($domainObj, $requestId);

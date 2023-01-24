@@ -144,8 +144,6 @@ class Frontend implements MiddlewareInterface
             $cookieExpire = ($isRefreshTimeBasedCookie ? $GLOBALS['EXEC_TIME'] + $this->backendUser->lifetime : 0);
             // Use the secure option when the current request is served by a secure connection:
             $cookieSecure = GeneralUtility::getIndpEnv('TYPO3_SSL');
-            // Deliver cookies only via HTTP and prevent possible XSS by JavaScript:
-            $cookieHttpOnly = (bool)$settings['cookieHttpOnly'];
 
             setcookie($this->backendUser->name, $sessionId, [
                 'expires' => $cookieExpire,
@@ -153,7 +151,7 @@ class Frontend implements MiddlewareInterface
                 'domain' => $cookieDomain,
                 'samesite' => 'None',
                 'secure' => $cookieSecure,
-                'httponly' => $cookieHttpOnly,
+                'httponly' => true,
             ]);
         }
     }
