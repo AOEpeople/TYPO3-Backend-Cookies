@@ -27,9 +27,11 @@ namespace Aoe\Becookies\Typo3\Hook;
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
 
+use Aoe\Becookies\Domain\Model\Request;
 use Aoe\Becookies\Domain\Repository\RequestRepository;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
@@ -41,14 +43,9 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
  */
 class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	/**
-	 * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
+	 * @var BackendUserAuthentication
 	 */
 	protected $backendUser;
-
-	/**
-     * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
-     */
-    private $objectManager;
 
 	/**
 	 * @var PersistenceManager
@@ -65,19 +62,18 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	public function __construct()
 	{
-		$this->objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-		$this->persistenceManager = $this->objectManager->get(PersistenceManager::class);
-        $this->requestRepository = $this->objectManager->get(RequestRepository::class);
+		$this->persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
+        $this->requestRepository = GeneralUtility::makeInstance(RequestRepository::class);
 		$this->setBackendUser($GLOBALS['BE_USER']);
 	}
 
 	/**
 	 * Sets a backend user.
 	 *
-	 * @param \TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser
+	 * @param BackendUserAuthentication $backendUser
 	 * @return void
 	 */
-	public function setBackendUser(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser)
+	public function setBackendUser(BackendUserAuthentication $backendUser)
 	{
 		$this->backendUser = $backendUser;
 	}
@@ -116,7 +112,7 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	{
 		/* @var $request Request */
         $request = GeneralUtility::makeInstance(
-            \Aoe\Becookies\Domain\Model\Request::class,
+            Request::class,
             $this->backendUser->user['uid'],
             $this->backendUser->id,
             $domain
@@ -210,7 +206,7 @@ class BackendHook implements \TYPO3\CMS\Core\SingletonInterface {
 	{
 		$domains = [];
 
-		$siteFinder = new \TYPO3\CMS\Core\Site\SiteFinder;
+		$siteFinder = new SiteFinder;
 		foreach($siteFinder->getAllSites() as $siteConfiguration) {
 			$domains[] = $siteConfiguration->getBase();
 		}

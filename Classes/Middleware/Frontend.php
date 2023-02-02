@@ -10,9 +10,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 class Frontend implements MiddlewareInterface
 {
@@ -161,8 +161,7 @@ class Frontend implements MiddlewareInterface
      */
     protected function getRepository()
     {
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        return $objectManager->get(RequestRepository::class);
+        return GeneralUtility::makeInstance(RequestRepository::class);
     }
 
     /**
@@ -174,6 +173,6 @@ class Frontend implements MiddlewareInterface
         if(FALSE === empty($reason)) {
             $message .= ' (reason:' . $reason . ')';
         }
-        throw new \RuntimeException( $message );
+        throw new RuntimeException( $message );
     }
 }

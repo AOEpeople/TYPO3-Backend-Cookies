@@ -62,7 +62,6 @@ class RequestRepository {
 			'domain' => $request->getDomain(),
 			'tstamp' => ($request->getTstamp() ? $request->getTstamp() : $GLOBALS['EXEC_TIME']),
 		);
-		
 
 		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
 		$queryBuilder
