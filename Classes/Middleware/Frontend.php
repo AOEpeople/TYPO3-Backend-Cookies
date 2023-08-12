@@ -30,14 +30,14 @@ class Frontend implements MiddlewareInterface
      * @var \TYPO3\CMS\Core\Authentication\BackendUserAuthentication
      */
     protected $backendUser;
-    
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $this->arguments = $request->getQueryParams();
 
         if (isset($this->arguments['tx_becookies']) && is_array($this->arguments['tx_becookies'])) {
             $this->backendUser = GeneralUtility::makeInstance(BackendUserAuthentication::class);
-            $this->backendUser->start();
+            $this->backendUser->start($request);
 
             $exceptionMessage = 'Warning: No Backend Cookies were transferred to the domain "' . GeneralUtility::getIndpEnv('HTTP_HOST') . '".';
             if(false === $this->areArgumentsValid()) {
@@ -81,7 +81,7 @@ class Frontend implements MiddlewareInterface
 
         return $result;
     }
-    
+
     /**
      * Determines whether the request is withing a defined time frame of 40 seconds.
      *
@@ -145,14 +145,19 @@ class Frontend implements MiddlewareInterface
             // Use the secure option when the current request is served by a secure connection:
             $cookieSecure = GeneralUtility::getIndpEnv('TYPO3_SSL');
 
-            setcookie($this->backendUser->name, $sessionId, [
+            $flags = [
                 'expires' => $cookieExpire,
                 'path' => $cookiePath,
                 'domain' => $cookieDomain,
-                'samesite' => 'None',
                 'secure' => $cookieSecure,
                 'httponly' => true,
-            ]);
+            ];
+
+            if (true === $cookieSecure) {
+                $flags['samesite'] = 'None';
+            }
+
+            setcookie($this->backendUser->name, $sessionId, $flags);
         }
     }
 

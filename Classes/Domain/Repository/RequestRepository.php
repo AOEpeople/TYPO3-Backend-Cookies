@@ -39,82 +39,82 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *
  */
 class RequestRepository {
-	/**
-	 * @var string
-	 */
-	const TABLE = 'tx_becookies_domain_model_request';
+    /**
+     * @var string
+     */
+    const TABLE = 'tx_becookies_domain_model_request';
 
-	/*
-	 * Persists a request element.
-	 *
-	 * @param Request $request
-	 * @return integer
-	 */
-	public function add(Request $request)
-	{
-		if ($request->getUid()) {
-			throw new LogicException('Updating existing elements is not allowed.');
-		}
+    /*
+     * Persists a request element.
+     *
+     * @param Request $request
+     * @return integer
+     */
+    public function add(Request $request)
+    {
+        if ($request->getUid()) {
+            throw new LogicException('Updating existing elements is not allowed.');
+        }
 
-		$fields = array(
-			'beuser' => $request->getBeuser(),
-			'session' => $request->getSession(),
-			'domain' => $request->getDomain(),
-			'tstamp' => ($request->getTstamp() ? $request->getTstamp() : $GLOBALS['EXEC_TIME']),
-		);
+        $fields = array(
+            'beuser' => $request->getBeuser(),
+            'session' => $request->getSession(),
+            'domain' => $request->getDomain(),
+            'tstamp' => ($request->getTstamp() ? $request->getTstamp() : $GLOBALS['EXEC_TIME']),
+        );
 
-		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
-		$queryBuilder
-			->insert(self::TABLE)
-			->values($fields)
-			->execute();
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+        $queryBuilder
+            ->insert(self::TABLE)
+            ->values($fields)
+            ->execute();
 
-		return $queryBuilder->getConnection()->lastInsertId();
-	}
+        return $queryBuilder->getConnection()->lastInsertId();
+    }
 
-	/**
-	 * Removes a request element.
-	 *
-	 * @param Request $request
-	 * @return void
-	 */
-	public function remove(Request $request)
-	{
-		if (!$request->getUid()) {
-			throw new LogicException('Cannot remove element without an identifier.');
-		}
+    /**
+     * Removes a request element.
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function remove(Request $request)
+    {
+        if (!$request->getUid()) {
+            throw new LogicException('Cannot remove element without an identifier.');
+        }
 
-		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
-		$queryBuilder
-			->delete(self::TABLE)
-			->where(
-				$queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($request->getUid(), \PDO::PARAM_INT))
-			)
-			->execute();
-	}
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+        $queryBuilder
+            ->delete(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($request->getUid(), \PDO::PARAM_INT))
+            )
+            ->execute();
+    }
 
-	/**
-	 * Loads a request element by identifier.
-	 *
-	 * @param integer $uid
-	 * @return Request
-	 */
-	public function findByUid($uid)
-	{
-		$request = null;
+    /**
+     * Loads a request element by identifier.
+     *
+     * @param integer $uid
+     * @return Request
+     */
+    public function findByUid($uid)
+    {
+        $request = null;
 
-		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
-		$rows = $queryBuilder
-			->select('*')
-			->from(self::TABLE)
-			->where(
-				$queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
-			)
-			->execute()
-			->fetchAll();
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+        $rows = $queryBuilder
+            ->select('*')
+            ->from(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT))
+            )
+            ->execute()
+            ->fetchAll();
 
-		if (count($rows)) {
-			$request = GeneralUtility::makeInstance(
+        if (count($rows)) {
+            $request = GeneralUtility::makeInstance(
                 Request::class,
                 $rows[0]['beuser'],
                 $rows[0]['session'],
@@ -122,32 +122,32 @@ class RequestRepository {
                 $rows[0]['uid'],
                 $rows[0]['tstamp']
             );
-		}
+        }
 
-		return $request;
-	}
+        return $request;
+    }
 
-	/**
-	 * Purges expired request elements.
-	 *
-	 * @param integer $exiresAfter
-	 * @return void
-	 */
-	public function purge($exiresAfter)
-	{
-		$exiresAfter = intval($exiresAfter);
+    /**
+     * Purges expired request elements.
+     *
+     * @param integer $exiresAfter
+     * @return void
+     */
+    public function purge($exiresAfter)
+    {
+        $exiresAfter = intval($exiresAfter);
 
-		if ($exiresAfter <= 0) {
-			throw new LogicException('Elements cannot expire immediatelly or in the past');
-		}
+        if ($exiresAfter <= 0) {
+            throw new LogicException('Elements cannot expire immediatelly or in the past');
+        }
 
-		$queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
-		$queryBuilder
-			->delete(self::TABLE)
-			->where(
-				$queryBuilder->expr()->lt('tstamp', ($GLOBALS['EXEC_TIME'] - $exiresAfter))
-			)
-			->execute();
-	}
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
+        $queryBuilder
+            ->delete(self::TABLE)
+            ->where(
+                $queryBuilder->expr()->lt('tstamp', ($GLOBALS['EXEC_TIME'] - $exiresAfter))
+            )
+            ->execute();
+    }
 }
 

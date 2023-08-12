@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Aoe\Becookies\:
+    resource: '../Classes/*'
+
+  Aoe\Becookies\Backend\EventListener\BecookieEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'becookies/backend/after-backend-page-render'
